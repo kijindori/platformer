@@ -1,4 +1,5 @@
 *.rc
 *.vcxproj
+*.vcxproj.*
 *.exe
 x64/*
