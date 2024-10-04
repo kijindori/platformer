@@ -2,7 +2,7 @@
 #include "pch.h"
 #include "Tilemap.h"
 #include "Player.h"
-
+#include "FlipbookActor.h"
 class Scene
 {
 public:
@@ -19,7 +19,7 @@ private:
 	unordered_map<wstring, Tilemap*> _tilemaps;
 	
 	Player* _actor = nullptr;
-
+	FlipbookActor* _col = nullptr;
 	Vec2Int Size{ 1920, 1024 };
 	Vec2 _startPos = { 1920, 1024 };
 };

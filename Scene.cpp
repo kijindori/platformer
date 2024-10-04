@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Scene.h"
 #include "Locator.h"
+#include "Collision.h"
 
 
 Scene::Scene() {}
@@ -9,7 +10,7 @@ Scene::~Scene() {}
 
 void Scene::Init()
 {	
-	
+	//Load image
 	Locator::GetImageService()->LoadFile(L"C:\\EJ\\Resource\\asteroid.png",L"IMG__BG");
 	Locator::GetImageService()->LoadFile(L"C:\\EJ\\Resource\\platformer-sprites\\Locations\\Tiles\\Tile_01.png",L"Tile_01.png");
 	Locator::GetImageService()->LoadFile(L"C:\\EJ\\Resource\\platformer-sprites\\MainCharacters\\1\\Run.png", L"Run.png");
@@ -31,12 +32,20 @@ void Scene::Init()
 	_actor = new Player(Locator::GetImageService()->FindFlipbook(L"Idle.png"));
 	_actor->SetPos(Vec2Int{ 100,100 });
 
+	_col = new FlipbookActor(Locator::GetImageService()->FindFlipbook(L"Idle.png"));
+	_col->SetPos(Vec2Int{ 100,500 });
+	_col->AddComponent(new Collider());
 	_bgImage = (Gdiplus::Image*)Locator::GetImageService()->Find(L"IMG__BG");
 }
 
 void Scene::Update()
 {
+	
 	_actor->Update();
+	_col->Update();
+
+	
+	
 }
 
 void Scene::Render(Gdiplus::Graphics* g)
@@ -47,8 +56,7 @@ void Scene::Render(Gdiplus::Graphics* g)
 		g->DrawImage(_bgImage, drawRect, 0, 0, _bgImage->GetWidth(), _bgImage->GetHeight(), UnitPixel);
 	}
 
-	Image* tile01 = (Image*) Locator::GetImageService()->Find(L"Tile_01.png");
-	g->DrawImage(tile01, 0, 0, 0, 0, 16, 16, UnitPixel);
-
+	_col->Render(g);
 	_actor->Render(g);
+	
 }

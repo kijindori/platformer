@@ -1,11 +1,9 @@
 #include "pch.h"
 #include "Actor.h"
-
+#include "Component.h"
 
 Actor::Actor() {}
 Actor::~Actor() {}
-
-
 
 void Actor::Init()
 {
@@ -15,13 +13,25 @@ void Actor::Init()
 
 void Actor::Update()
 {
+	for (Component* comp : _comp)
+	{
+		if (comp == nullptr)
+			continue;
 
+		comp->Update();
+	}
 }
 
 
 void Actor::Render(Gdiplus::Graphics* g)
 {
-	
+	for (Component* comp : _comp)
+	{
+		if (comp == nullptr)
+			continue;
+
+		comp->Render(g);
+	}
 }
 
 
@@ -55,5 +65,12 @@ int32 Actor::GetLayer()
 void Actor::SetLayer(int32 layer)
 {
 	_layer = layer;
+}
+
+void Actor::AddComponent(Component* comp)
+{
+	comp->SetOwner(this);
+	comp->UpdateAbsolutePos();
+	_comp.push_back(comp);
 }
 

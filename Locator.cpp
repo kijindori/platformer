@@ -5,3 +5,4 @@ AudioService* Locator::_audioService = nullptr;
 ImageService* Locator::_imageService = nullptr;
 TilemapService* Locator::_tilemapService = nullptr;
 InputHandler* Locator::_input = nullptr;
+Collision* Locator::_collision = nullptr;

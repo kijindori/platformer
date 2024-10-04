@@ -34,6 +34,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     MSG msg{};
     Game game;
     game.Init(hWnd);
+    int64 prevCount = 0;
+    int64 frequency = 0;
+    float timer = 0;
+
+    ::QueryPerformanceCounter((LARGE_INTEGER*) &prevCount);
+    ::QueryPerformanceFrequency((LARGE_INTEGER*)&frequency);
 
     // LOOP !
     while (msg.message != WM_QUIT)
@@ -45,8 +51,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else
         {
+            
+            int64 cur;
+            ::QueryPerformanceCounter((LARGE_INTEGER*)&cur);
+
+            float elapsedTime = ((cur - prevCount) / (float)frequency) * 1000;
+            prevCount = cur;
+            timer += elapsedTime;
+
+
             game.Update();
             game.Render();
+
         }
     }
 
@@ -104,8 +120,6 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
       return FALSE;
    }
 
-   
-
 
    ShowWindow(hWnd, nCmdShow);
    UpdateWindow(hWnd);
@@ -113,7 +127,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
-//
+
 //  함수: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
 //  용도: 주 창의 메시지를 처리합니다.
@@ -130,7 +144,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
-            // 메뉴 선택을 구문 분석합니다:
             switch (wmId)
             {
             case IDM_ABOUT:
@@ -147,7 +160,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
             EndPaint(hWnd, &ps);
         }
         break;

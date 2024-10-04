@@ -4,6 +4,8 @@
 #include "TilemapService.h"
 #include "InputHandler.h"
 
+class Collision;
+
 class Locator
 {
 public:
@@ -19,10 +21,14 @@ public:
 	static InputHandler* GetInputService() { return _input; }
 	static void provideInputService(InputHandler* input) { _input = input; }
 
+	static Collision* GetCollisionService() { return _collision; }
+	static void provideCollisionService(Collision* collision) { _collision = collision; }
+
 private:
 	static AudioService* _audioService;
 	static ImageService* _imageService;
 	static TilemapService* _tilemapService;
 	static InputHandler* _input;
+	static Collision* _collision;
 };
 

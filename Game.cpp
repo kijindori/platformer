@@ -4,6 +4,7 @@
 #include "ImageService.h"
 #include "AudioService.h"
 #include "TilemapService.h"
+#include "Collision.h"
 
 void Game::Init(HWND hWnd)
 {
@@ -32,6 +33,7 @@ void Game::Init(HWND hWnd)
 	Locator::provideImageService(new ImageService());
 	Locator::provideTilemapService(new TilemapService());
 	Locator::provideInputService(new InputHandler(_hWnd));
+	Locator::provideCollisionService(new Collision());
 
 
 	// Deligate
@@ -43,7 +45,11 @@ void Game::Init(HWND hWnd)
 void Game::Update()
 {
 	Locator::GetInputService()->Update();
+	Locator::GetCollisionService()->Iterate();
 	_scene->Update();
+
+	
+	
 }
 
 void Game::Render()
