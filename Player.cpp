@@ -94,7 +94,8 @@ void Player::Update()
 
 		if (Locator::GetInputService()->IsKeyPressed(KeyType::Right)
 			&& Locator::GetInputService()->IsKeyPressed(KeyType::Left)
-			) {
+			) 
+		{
 			_v.x = 0; //stop
 			SetState(PlayerState::Idle);
 			break;
