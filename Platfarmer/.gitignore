@@ -1,0 +1,8 @@
+*.rc
+*.vcxproj
+*.vcxproj.*
+*.exe
+*.ico
+x64/*
+Platfarmer/*
+.vs/*
