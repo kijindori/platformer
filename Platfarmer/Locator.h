@@ -1,7 +1,7 @@
 #pragma once
 #include "Loader.h"
 #include "AudioService.h"
-
+#include "Camera.h"
 #include "InputHandler.h"
 
 class Collision;
@@ -21,10 +21,14 @@ public:
 	static Collision* GetCollisionService() { return _collision; }
 	static void provideCollisionService(Collision* collision) { _collision = collision; }
 
+	static Camera* GetCamera() { return _cam; }
+	static void provideCamera(Camera* cam) { _cam = cam; }
+
 private:
 	static AudioService* _audioService;
 	static Loader* _loader;
 	static InputHandler* _input;
 	static Collision* _collision;
+	static Camera* _cam;
 };
 

@@ -16,7 +16,7 @@ Player::Player(Flipbook* fb): Super(fb)
 	_fbs[(int32)PlayerState::Fall] = Locator::GetLoader()->FindFlipbook(L"Fall.png");
 
 	Collider* coll = new Collider();
-	coll->SetSize(Vec2Int{ 48, 48 });
+	coll->SetSize(Vec2Int{ 32, 32 });
 	AddComponent(coll);
 }
 Player::~Player() {}
@@ -32,110 +32,14 @@ void Player::Init()
 
 void Player::Update()
 {
-	
+	/* Update Player State */
+	UpdateState();
 
-	if (Locator::GetInputService()->IsKeyDown(KeyType::Right)) {
-		Super::SetLeft(false);
-		_dir = 1;
-	}
+	TickGravity();
 
-	if (Locator::GetInputService()->IsKeyPressed(KeyType::Left)) {
-		Super::SetLeft(true);
-		_dir = -1;
-	}
-
-
-	switch (_state)
-	{
-	case(PlayerState::Idle):
-
-		if (Locator::GetInputService()->IsKeyDown(KeyType::Right)
-			|| Locator::GetInputService()->IsKeyDown(KeyType::Left)
-			|| Locator::GetInputService()->IsKeyDown(KeyType::W)
-			) 
-		{
-			SetState(PlayerState::Ready);
-			break;
-		}
-
-
-		break;
-
-	case(PlayerState::Ready):
-
-		if (Locator::GetInputService()->IsKeyPressed(KeyType::Right)
-			|| Locator::GetInputService()->IsKeyPressed(KeyType::Left)
-			) 
-		{
-			_v.x = 1; // run
-			SetState(PlayerState::Run);
-			break;
-		}
-
-		if (Locator::GetInputService()->IsKeyPressed(KeyType::W)) 
-		{
-			_v.y = -13; // jump
-			_gravity = 1.5;
-			SetState(PlayerState::Jump);
-			break;
-		}
-
-		break;
-			
-	case(PlayerState::Run):	
-
-		if (Locator::GetInputService()->IsKeyIdle(KeyType::Right)
-			&& Locator::GetInputService()->IsKeyIdle(KeyType::Left))
-		{
-			_v.x = 0; //stop
-			SetState(PlayerState::Idle);
-			break;
-		}
-
-		if (Locator::GetInputService()->IsKeyPressed(KeyType::Right)
-			&& Locator::GetInputService()->IsKeyPressed(KeyType::Left)
-			) 
-		{
-			_v.x = 0; //stop
-			SetState(PlayerState::Idle);
-			break;
-		}
-
-		if (Locator::GetInputService()->IsKeyPressed(KeyType::W))
-		{
-			_v.y = -17; // jump
-			_gravity = 1.5;
-			SetState(PlayerState::Jump);
-			break;
-		}
-		break;
-
-	case(PlayerState::Jump):
-		if (_v.y > 0)
-			SetState(PlayerState::Fall);
-		
-		break;
-
-	case(PlayerState::OnGround):
-		SetState(PlayerState::Ready);
-		break;
-
-	case(PlayerState::Fall):
-		if (_v.y <= 0)
-			SetState(PlayerState::Ready);
-	}
-
-	if (_v.y > 0)
-		SetState(PlayerState::Fall);
-
-	if (_v.y < 13)
-		_v.y = min(13, _v.y + _gravity);
-
-	Vec2Int pos = GetPos();
-	pos.x += _v.x * _dir;
-	pos.y += _v.y;
-
-	SetPos(pos);
+	/* Update Player Position */
+	TickStep();
+	/* Update Component  */
 	Super::Update();
 }
 
@@ -268,6 +172,11 @@ PlayerState Player::CheckOverlap(RECT& other, RECT& intersect)
 	}
 }
 
+PlayerState Player::GetState()
+{
+	return _state;
+}
+
 
 void Player::SetState(PlayerState st)
 {
@@ -281,4 +190,166 @@ void Player::SetState(PlayerState st)
 
 	_state = st;
 	
+}
+
+void Player::UpdateState()
+{
+
+	if (Locator::GetInputService()->IsKeyDown(KeyType::Right)) {
+		Super::SetLeft(false);
+		_dir = 1;
+	}
+
+	if (Locator::GetInputService()->IsKeyPressed(KeyType::Left)) {
+		Super::SetLeft(true);
+		_dir = -1;
+	}
+
+
+	switch (_state)
+	{
+	case(PlayerState::Idle):
+
+		if (Locator::GetInputService()->IsKeyDown(KeyType::Right)
+			|| Locator::GetInputService()->IsKeyDown(KeyType::Left)
+			|| Locator::GetInputService()->IsKeyDown(KeyType::W)
+			)
+		{
+			SetState(PlayerState::Ready);
+			break;
+		}
+
+
+		break;
+
+	case(PlayerState::Ready):
+
+		if (Locator::GetInputService()->IsKeyPressed(KeyType::Right)
+			|| Locator::GetInputService()->IsKeyPressed(KeyType::Left)
+			)
+		{
+			_v.x = 1; // run
+			SetState(PlayerState::Run);
+			break;
+		}
+
+		if (Locator::GetInputService()->IsKeyPressed(KeyType::W))
+		{
+			_v.y = -13; // jump
+			_gravity = 1.5;
+			SetState(PlayerState::Jump);
+			break;
+		}
+
+		break;
+
+	case(PlayerState::Run):
+
+		if (Locator::GetInputService()->IsKeyIdle(KeyType::Right)
+			&& Locator::GetInputService()->IsKeyIdle(KeyType::Left))
+		{
+			_v.x = 0; //stop
+			SetState(PlayerState::Idle);
+			break;
+		}
+
+		if (Locator::GetInputService()->IsKeyPressed(KeyType::Right)
+			&& Locator::GetInputService()->IsKeyPressed(KeyType::Left)
+			)
+		{
+			_v.x = 0; //stop
+			SetState(PlayerState::Idle);
+			break;
+		}
+
+		if (Locator::GetInputService()->IsKeyPressed(KeyType::W))
+		{
+			_v.y = -17; // jump
+			_gravity = 1.5;
+			SetState(PlayerState::Jump);
+			break;
+		}
+		break;
+
+	case(PlayerState::Jump):
+		if (_v.y > 0)
+			SetState(PlayerState::Fall);
+
+		break;
+
+	case(PlayerState::OnGround):
+		SetState(PlayerState::Ready);
+		break;
+
+	case(PlayerState::Fall):
+		if (_v.y <= 0)
+			SetState(PlayerState::Ready);
+	}
+}
+
+bool Player::CanGo(int32 cellX, int32 cellY, vector<vector<Tile>>& tiles)
+{
+	
+	return tiles[cellY][cellX].value != 1;
+}
+
+void Player::Stop()
+{
+	_v.x = 0;
+	_v.y = 0;
+}
+
+void Player::Run()
+{
+	_v.x = 1;
+}
+
+void Player::TickGravity()
+{
+	if (_v.y < 13)
+		_v.y = min(13, _v.y + _gravity);
+}
+
+void Player::TickStep()
+{
+	Vec2Int pos = GetPos();
+
+	Tilemap* tm = Locator::GetLoader()->FindTilemap(L"lv1-col");
+	auto& tiles = tm->GetTiles();
+	Vec2Int msize = tm->GetMapSize();
+	Vec2Int tileSize = tm->GetTileSize();
+
+	int32 nextX = pos.x + _v.x * _dir;
+	int32 nextY = pos.y + _v.y;
+
+	int32 currentCellX = pos.x / tileSize.x;
+	int32 currentCellY = pos.y / tileSize.y;
+	int32 nextCellX = nextX / tileSize.x;
+	int32 nextCellY = nextY / tileSize.y;
+
+	if (CanGo(nextCellX, currentCellY, tiles))
+	{
+		pos.x = nextX;
+	}
+	else
+	{
+
+	}
+
+	if (CanGo(currentCellX, nextCellY, tiles))
+	{
+		pos.y = nextY;
+		if (_state != PlayerState::Fall)
+			SetState(PlayerState::Fall);
+	}
+	else
+	{
+		if (_state == PlayerState::Fall)
+		{
+			Stop();
+			SetState(PlayerState::Ready);
+		}
+	}
+
+	SetPos(pos);
 }

@@ -29,11 +29,15 @@ void Collider::Update()
 
 void Collider::Render(Graphics* g)
 {
+	/* Render if debug mode set true */
+	if (!_debug)
+		return;
+
 	Vec2Int pos = GetAbsolutePos();
 	Vec2Int OwnerPos = GetOwner()->GetPos();
 	Vec2Int size = GetSize();
 	Gdiplus::Pen pen(Gdiplus::Color(255,255,0), 1);
-	//
+	
 	g->DrawRectangle(&pen, pos.x - size.x / 2, pos.y - size.y , size.x , size.y);
 }
 

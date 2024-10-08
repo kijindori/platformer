@@ -34,6 +34,7 @@ void Game::Init(HWND hWnd)
 	Locator::provideLoader(new Loader());
 	Locator::provideInputService(new InputHandler(_hWnd));
 	Locator::provideCollisionService(new Collision());
+	
 
 
 	// Deligate

@@ -11,13 +11,11 @@ Scene::~Scene() {}
 
 void Scene::Init()
 {	
-	//Load TILEMAP
-
-	Locator::GetLoader()->LoadTilemap(L"C:\\z2x7\\Resource\\1lvl-col.txt", L"lv1-col");
+	
 
 
 	//Load image
-	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\asteroid.png",L"IMG__BG");
+	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\save.png",L"IMG__BG");
 	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\platformer-sprites\\Locations\\Tiles\\Tile_01.png",L"Tile_01.png");
 	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\platformer-sprites\\MainCharacters\\1\\Run.png", L"Run.png");
 	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\platformer-sprites\\MainCharacters\\1\\Idle.png", L"Idle.png");
@@ -35,35 +33,21 @@ void Scene::Init()
 	Locator::GetLoader()->CreateFlipbook(L"Double_Jump.png", 0, 0, 5, Vec2Int{ 32,32 });
 	Locator::GetLoader()->CreateFlipbook(L"Wall_Jump.png", 0, 0, 6, Vec2Int{ 32,32 });
 
+	/* Player */
 	_actor = new Player(Locator::GetLoader()->FindFlipbook(L"Idle.png"));
 	_actor->SetPos(Vec2Int{ 100,100 });
 
+	/* Camera */
+	Locator::provideCamera(new Camera(_actor));
+
+	/* Background Image */
 	_bgImage = (Gdiplus::Image*)Locator::GetLoader()->FindImage(L"IMG__BG");
 
+	/* Load TILEMAP */
+	Locator::GetLoader()->LoadTilemap(L"C:\\z2x7\\Resource\\1lvl-col.txt", L"lv1-col");
 
-	// WALL
+	/* WALL */
 	Tilemap* tm = Locator::GetLoader()->FindTilemap(L"lv1-col");
-	auto& tiles = tm->GetTiles();
-	Vec2Int msize = tm->GetMapSize();
-	Vec2Int tileSize = tm->GetTileSize();
-
-	for (int y = 0; y < msize.y; y++)
-	{
-		for (int x = 0; x < msize.x; x++)
-		{
-			int value = tiles[y][x].value;
-
-			if (value == 1)
-			{
-				//FlipbookActor* col = new FlipbookActor(Locator::GetLoader()->FindFlipbook(L"Idle.png"));
-				Actor* col = new Actor();
-				col->SetPos(Vec2Int(x * tileSize.x, y * tileSize.y));
-				col->AddComponent(new Collider());
-				_col.push_back(col);
-			}
-			
-		}
-	}
 
 }
 
@@ -81,10 +65,14 @@ void Scene::Update()
 
 void Scene::Render(Gdiplus::Graphics* g)
 {
+
+	Locator::GetCamera()->UpdatePos();
+	Vec2Int camPos = Locator::GetCamera()->GetPos();
+
 	//BACKGROUND IMAGE
 	Rect drawRect(0, 0, CLIENT_WIDTH, CLIENT_HEIGHT);
 	if (_bgImage && _bgImage->GetLastStatus() == Ok) {
-		g->DrawImage(_bgImage, drawRect, 0, 0, _bgImage->GetWidth(), _bgImage->GetHeight(), UnitPixel);
+		g->DrawImage(_bgImage, drawRect, camPos.x - CLIENT_WIDTH / 2, camPos.y - CLIENT_HEIGHT / 2 , CLIENT_WIDTH, CLIENT_HEIGHT, UnitPixel);
 	}
 
 	_actor->Render(g);

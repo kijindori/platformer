@@ -1,6 +1,7 @@
 #pragma once
 #include "FlipbookActor.h"
 #include "Collider.h"
+#include "Tilemap.h"
 
 enum class PlayerState
 {
@@ -38,7 +39,17 @@ public:
 
 	PlayerState CheckOverlap(RECT& other, RECT& intersect);
 
+	PlayerState GetState();
+
+private:
 	void SetState(PlayerState st);
+	void UpdateState();
+	bool CanGo(int32 cellX, int32 cellY, vector<vector<Tile>>& tiles);
+	void Stop();
+	void Run();
+	void TickGravity();
+	void TickStep();
+
 private:
 	int32 _dir = 1;
 	int32 _gravity = 1.5;

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "FlipbookActor.h"
+#include "Locator.h"
 
 FlipbookActor::FlipbookActor(Flipbook* fb): _fb(fb) 
 {
@@ -26,6 +27,10 @@ void FlipbookActor::Render(Gdiplus::Graphics* g)
 
 	Vec2Int size = GetSize();
 	Vec2Int pos = GetPos();
+
+	Locator::GetCamera()->AdjustActorPosition(&pos);
+	
+
 	int32 w = _fb->_size.x;
 	int32 h = _fb->_size.y;
 

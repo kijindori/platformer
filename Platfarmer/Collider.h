@@ -41,7 +41,7 @@ public:
 	BYTE _collisionGroup = 0;
 private:
 	RECT _r{ 0,0,32,32 };
-
+	bool _debug = false;
 	unordered_set<Collider*> _collided;
 };
 
