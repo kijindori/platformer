@@ -59,10 +59,13 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             prevCount = cur;
             timer += elapsedTime;
 
-
-            game.Update();
-            game.Render();
-
+            if (timer > 30)
+            {
+                game.Update();
+                game.Render();
+                timer = 0;
+            }
+            
         }
     }
 

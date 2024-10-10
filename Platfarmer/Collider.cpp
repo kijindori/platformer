@@ -5,6 +5,10 @@
 
 Collider::Collider()
 {
+	/*
+		Collider 생성될 때,
+		충돌 감지를 위한 서비스에 해당 Collider 를 추가합니다.
+	*/
 	Locator::GetCollisionService()->AddColliders(this);
 }
 

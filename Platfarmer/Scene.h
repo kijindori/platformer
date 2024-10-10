@@ -18,8 +18,7 @@ private:
 	unordered_map<wstring, Image*> _images;
 	unordered_map<wstring, Tilemap*> _tilemaps;
 	
-	Player* _actor = nullptr;
-	vector<Actor*> _col;
+	vector<Actor*> _actors;
 	Vec2Int Size{ 1920, 1024 };
 	Vec2 _startPos = { 1920, 1024 };
 };

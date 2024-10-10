@@ -4,6 +4,15 @@
 
 Player::Player(Flipbook* fb): Super(fb)
 {
+	/*
+		플레이어가 생성될 때,
+		Size -> 48,48,
+		각 상태 별 애니메이션을 가져오고,
+		Collider 를 추가합니다.
+	*/
+
+	SetSize(Vec2Int{ 48,48 });
+
 	_fbs.resize((int32)PlayerState::End);
 
 	_fbs[(int32)PlayerState::Idle] = Locator::GetLoader()->FindFlipbook(L"Idle.png");
@@ -16,7 +25,8 @@ Player::Player(Flipbook* fb): Super(fb)
 	_fbs[(int32)PlayerState::Fall] = Locator::GetLoader()->FindFlipbook(L"Fall.png");
 
 	Collider* coll = new Collider();
-	coll->SetSize(Vec2Int{ 32, 32 });
+	Vec2Int size = GetSize();
+	coll->SetSize(Vec2Int{ size.x, size.y });
 	AddComponent(coll);
 }
 Player::~Player() {}
@@ -69,71 +79,33 @@ void Player::OnBeginOverlapped(Collider* src, Collider* dest)
 	switch (state)
 	{
 	case(PlayerState::OnGround):
-		myPosition.y -= h;
+		//myPosition.y -= h;
 		break;
 
 	case(PlayerState::UnderGround):
-		myPosition.y += h;
+		//myPosition.y += h;
 		break;
 
 	case(PlayerState::LeftGround):
-		myPosition.x -= w;
+		//myPosition.x -= w;
 		break;
 
 	case(PlayerState::RightGround):
-		myPosition.x += w;
+		//myPosition.x += w;
 		break;
 	}
 
+	Hit();
+	SetState(PlayerState::Hit);
 
-
-	SetPos(myPosition);
-
-	_v.x = 0;
-	_v.y = 0;
-	_gravity = 0;
-
-	SetState(PlayerState::Ready);
+	//SetPos(myPosition);
+	//SetState(PlayerState::Ready);
 }
 
 // 충돌 중에 위치 조정
 void Player::OnOverlapping(Collider* src, Collider* dest)
 {
-	RECT intersect{};
-	::IntersectRect(&intersect, src->GetRect(), dest->GetRect());
-
-	int32 w = intersect.right - intersect.left;
-	int32 h = intersect.bottom - intersect.top;
-
-	RECT other = *dest->GetRect();
-
-	Vec2Int myPosition = GetPos();
-
-	PlayerState state = CheckOverlap(other, intersect);
 	
-	switch (state)
-	{
-	case(PlayerState::OnGround):
-		myPosition.y -= h;
-		break;
-
-	case(PlayerState::UnderGround):
-		myPosition.y += h;
-		break;
-
-	case(PlayerState::LeftGround):
-		myPosition.x -= w;
-		break;
-
-	case(PlayerState::RightGround):
-		myPosition.x += w;
-		break;
-	}
-
-	
-
-	SetPos(myPosition);
-
 }
 
 void Player::OnEndOverlapped(Collider* src, Collider* dest)
@@ -196,13 +168,13 @@ void Player::UpdateState()
 {
 
 	if (Locator::GetInputService()->IsKeyDown(KeyType::Right)) {
-		Super::SetLeft(false);
 		_dir = 1;
+		Super::SetLeft(false);
 	}
 
-	if (Locator::GetInputService()->IsKeyPressed(KeyType::Left)) {
-		Super::SetLeft(true);
+	if (Locator::GetInputService()->IsKeyDown(KeyType::Left)) {
 		_dir = -1;
+		Super::SetLeft(true);
 	}
 
 
@@ -224,19 +196,23 @@ void Player::UpdateState()
 
 	case(PlayerState::Ready):
 
-		if (Locator::GetInputService()->IsKeyPressed(KeyType::Right)
-			|| Locator::GetInputService()->IsKeyPressed(KeyType::Left)
-			)
+		if (Locator::GetInputService()->IsKeyPressed(KeyType::Right))
 		{
-			_v.x = 1; // run
+			Run(1); 
+			SetState(PlayerState::Run);
+			break;
+		}
+
+		if (Locator::GetInputService()->IsKeyPressed(KeyType::Left))
+		{
+			Run(-1);
 			SetState(PlayerState::Run);
 			break;
 		}
 
 		if (Locator::GetInputService()->IsKeyPressed(KeyType::W))
 		{
-			_v.y = -13; // jump
-			_gravity = 1.5;
+			Jump();
 			SetState(PlayerState::Jump);
 			break;
 		}
@@ -248,7 +224,7 @@ void Player::UpdateState()
 		if (Locator::GetInputService()->IsKeyIdle(KeyType::Right)
 			&& Locator::GetInputService()->IsKeyIdle(KeyType::Left))
 		{
-			_v.x = 0; //stop
+			_v.x = 0; 
 			SetState(PlayerState::Idle);
 			break;
 		}
@@ -257,18 +233,33 @@ void Player::UpdateState()
 			&& Locator::GetInputService()->IsKeyPressed(KeyType::Left)
 			)
 		{
-			_v.x = 0; //stop
+			_v.x = 0; 
 			SetState(PlayerState::Idle);
 			break;
 		}
 
 		if (Locator::GetInputService()->IsKeyPressed(KeyType::W))
 		{
-			_v.y = -17; // jump
-			_gravity = 1.5;
+			Jump();
 			SetState(PlayerState::Jump);
 			break;
 		}
+
+		if (Locator::GetInputService()->IsKeyPressed(KeyType::Right))
+		{
+			Run(1);
+			SetState(PlayerState::Run);
+			break;
+		}
+
+		if (Locator::GetInputService()->IsKeyPressed(KeyType::Left))
+		{
+			Run(-1);
+			SetState(PlayerState::Run);
+			break;
+		}
+
+		
 		break;
 
 	case(PlayerState::Jump):
@@ -293,21 +284,49 @@ bool Player::CanGo(int32 cellX, int32 cellY, vector<vector<Tile>>& tiles)
 	return tiles[cellY][cellX].value != 1;
 }
 
-void Player::Stop()
+void Player::Jump()
 {
-	_v.x = 0;
-	_v.y = 0;
+	_v.y = -13; // jump
+	//_gravity = 1.5;
 }
 
-void Player::Run()
+void Player::Hit()
 {
-	_v.x = 1;
+	_v.x = _dir * -3;
+	_v.y = -9;
+}
+
+void Player::Drag()
+{
+	if (_v.x < 0)
+		_v.x = min(0, _v.x + 0.7);
+	else
+		_v.x = max(0, _v.x - 0.7);
+}
+
+void Player::StopX()
+{
+	_v.x = 0;
+}
+
+void Player::StopY()
+{
+	_v.y = 0;
+}
+void Player::Run(int32 dir)
+{
+	// 캐릭터의 방향과 진행 방향이 다르면 멈춥니다.
+	if (_v.x * dir < 0)
+		StopX();
+
+	if(abs(_v.x) < 3)
+		_v.x =  min(3, _v.x + 1.3 * dir);
 }
 
 void Player::TickGravity()
 {
-	if (_v.y < 13)
-		_v.y = min(13, _v.y + _gravity);
+	if (_v.y < 11)
+		_v.y = min(11, _v.y + _gravity);
 }
 
 void Player::TickStep()
@@ -319,14 +338,18 @@ void Player::TickStep()
 	Vec2Int msize = tm->GetMapSize();
 	Vec2Int tileSize = tm->GetTileSize();
 
-	int32 nextX = pos.x + _v.x * _dir;
+	int32 nextX = pos.x + _v.x;
 	int32 nextY = pos.y + _v.y;
 
+	/* 현재 위치한 셀 좌표 */
 	int32 currentCellX = pos.x / tileSize.x;
 	int32 currentCellY = pos.y / tileSize.y;
+
+	/* 다음 스텝의 셀 좌표 */
 	int32 nextCellX = nextX / tileSize.x;
 	int32 nextCellY = nextY / tileSize.y;
 
+	/* X 축 방향 이동 가능 ? */
 	if (CanGo(nextCellX, currentCellY, tiles))
 	{
 		pos.x = nextX;
@@ -335,7 +358,7 @@ void Player::TickStep()
 	{
 
 	}
-
+	/* Y 축 방향 이동 가능 ? */
 	if (CanGo(currentCellX, nextCellY, tiles))
 	{
 		pos.y = nextY;
@@ -346,9 +369,11 @@ void Player::TickStep()
 	{
 		if (_state == PlayerState::Fall)
 		{
-			Stop();
+			StopY();
 			SetState(PlayerState::Ready);
 		}
+
+		Drag();
 	}
 
 	SetPos(pos);

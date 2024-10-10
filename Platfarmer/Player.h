@@ -45,10 +45,15 @@ private:
 	void SetState(PlayerState st);
 	void UpdateState();
 	bool CanGo(int32 cellX, int32 cellY, vector<vector<Tile>>& tiles);
-	void Stop();
-	void Run();
+	void StopX();
+	void StopY();
+	void Run(int32 dir);
+	void Jump();
+	void Hit();
+	void Drag();
 	void TickGravity();
 	void TickStep();
+
 
 private:
 	int32 _dir = 1;
