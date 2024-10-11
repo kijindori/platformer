@@ -22,6 +22,8 @@ public:
 	void SetSize(Vec2Int size);
 	int32 GetLayer();
 	void SetLayer(int32 layer);
+	double GetTimer();
+	void SetTimer(double timer);
 
 	void AddComponent(Component* comp);
 
@@ -33,6 +35,7 @@ private:
 	Vec2Int _pos{0,0};
 	Vec2Int _size{32,32};
 	int32 _layer = 0;
+	double _timer = 0;
 
 	vector<Component*> _comp;
 };

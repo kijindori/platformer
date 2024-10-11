@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Player.h"
 #include "Locator.h"
+#include "Barrel.h"
+#include "Cactus.h"
 
 Player::Player(Flipbook* fb): Super(fb)
 {
@@ -95,8 +97,12 @@ void Player::OnBeginOverlapped(Collider* src, Collider* dest)
 		break;
 	}
 
-	Hit();
-	SetState(PlayerState::Hit);
+	if (dynamic_cast<Barrel*>(dest->GetOwner()) || dynamic_cast<Cactus*>(dest->GetOwner()))
+	{
+		Hit();
+		SetState(PlayerState::Hit);
+	}
+		
 
 	//SetPos(myPosition);
 	//SetState(PlayerState::Ready);
@@ -166,6 +172,7 @@ void Player::SetState(PlayerState st)
 
 void Player::UpdateState()
 {
+	double timer;
 
 	if (Locator::GetInputService()->IsKeyDown(KeyType::Right)) {
 		_dir = 1;
@@ -272,6 +279,19 @@ void Player::UpdateState()
 		SetState(PlayerState::Ready);
 		break;
 
+	case(PlayerState::Hit):
+		timer = GetTimer();
+		/* 2초간 Hit 상태 유지 */
+		if (GetTimer() > 2)
+		{
+			SetTimer(0);
+			SetState(PlayerState::Ready);
+		}
+		else
+			/* TICK */
+			SetTimer( timer + Locator::GetTimer()->GetInterval() );
+		break;
+
 	case(PlayerState::Fall):
 		if (_v.y <= 0)
 			SetState(PlayerState::Ready);
@@ -373,6 +393,7 @@ void Player::TickStep()
 			SetState(PlayerState::Ready);
 		}
 
+		// 마찰력 적용
 		Drag();
 	}
 

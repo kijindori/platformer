@@ -3,6 +3,7 @@
 #include "AudioService.h"
 #include "Camera.h"
 #include "InputHandler.h"
+#include "Timer.h"
 
 class Collision;
 
@@ -24,11 +25,15 @@ public:
 	static Camera* GetCamera() { return _cam; }
 	static void provideCamera(Camera* cam) { _cam = cam; }
 
+	static Timer* GetTimer() { return _timer;  }
+	static void provideTimer(Timer* timer) { _timer = timer; }
+
 private:
 	static AudioService* _audioService;
 	static Loader* _loader;
 	static InputHandler* _input;
 	static Collision* _collision;
 	static Camera* _cam;
+	static Timer* _timer;
 };
 

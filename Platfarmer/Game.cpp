@@ -34,6 +34,7 @@ void Game::Init(HWND hWnd)
 	Locator::provideLoader(new Loader());
 	Locator::provideInputService(new InputHandler(_hWnd));
 	Locator::provideCollisionService(new Collision());
+	Locator::provideTimer(new Timer());
 	
 
 
@@ -46,8 +47,10 @@ void Game::Init(HWND hWnd)
 void Game::Update()
 {
 	Locator::GetInputService()->Update();
-	
+	Locator::GetTimer()->Update();
+
 	_scene->Update();
+
 	Locator::GetCollisionService()->Iterate();
 	
 }

@@ -69,6 +69,16 @@ void Actor::SetLayer(int32 layer)
 	_layer = layer;
 }
 
+double Actor::GetTimer()
+{
+	return _timer;
+}
+
+void Actor::SetTimer(double timer)
+{
+	_timer = timer;
+}
+
 void Actor::AddComponent(Component* comp)
 {
 	comp->SetOwner(this);
