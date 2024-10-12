@@ -1,6 +1,18 @@
 #pragma once
 #include "FlipbookActor.h"
 
+enum class CactusState
+{
+	Idle,
+	Run,
+	Hit,
+	Fall,
+	Jump,
+
+	End,
+};
+
+
 class Cactus : public FlipbookActor
 {
 	using Super = FlipbookActor;
@@ -15,6 +27,9 @@ public:
 
 private:
 	void Hit();
+
+private:
+	vector<Flipbook*> _fbs;
 
 };
 

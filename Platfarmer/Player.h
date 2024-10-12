@@ -58,7 +58,7 @@ private:
 private:
 	int32 _dir = 1;
 	int32 _gravity = 1.5;
-	Vec2 _v{ 0,0 };
+	Vec2Int _v{ 0,0 };
 
 	PlayerState _state = PlayerState::Idle;
 	vector<Flipbook*> _fbs;

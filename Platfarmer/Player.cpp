@@ -7,8 +7,8 @@
 Player::Player(Flipbook* fb): Super(fb)
 {
 	/*
-		플레이어가 생성될 때,
-		Size -> 48,48,
+		플레이어 생성,
+		Size : 48X48 
 		각 상태 별 애니메이션을 가져오고,
 		Collider 를 추가합니다.
 	*/
@@ -47,10 +47,12 @@ void Player::Update()
 	/* Update Player State */
 	UpdateState();
 
+	/**/
 	TickGravity();
 
 	/* Update Player Position */
 	TickStep();
+
 	/* Update Component  */
 	Super::Update();
 }
@@ -97,13 +99,6 @@ void Player::OnBeginOverlapped(Collider* src, Collider* dest)
 		break;
 	}
 
-	if (dynamic_cast<Barrel*>(dest->GetOwner()) || dynamic_cast<Cactus*>(dest->GetOwner()))
-	{
-		Hit();
-		SetState(PlayerState::Hit);
-	}
-		
-
 	//SetPos(myPosition);
 	//SetState(PlayerState::Ready);
 }
@@ -111,7 +106,16 @@ void Player::OnBeginOverlapped(Collider* src, Collider* dest)
 // 충돌 중에 위치 조정
 void Player::OnOverlapping(Collider* src, Collider* dest)
 {
-	
+	if (dynamic_cast<Barrel*>(dest->GetOwner()) || dynamic_cast<Cactus*>(dest->GetOwner()))
+	{
+
+		if (_state != PlayerState::Hit)
+		{
+			Hit();
+			SetState(PlayerState::Hit);
+		}
+
+	}
 }
 
 void Player::OnEndOverlapped(Collider* src, Collider* dest)
@@ -175,11 +179,13 @@ void Player::UpdateState()
 	double timer;
 
 	if (Locator::GetInputService()->IsKeyDown(KeyType::Right)) {
+		// Turn Right
 		_dir = 1;
 		Super::SetLeft(false);
 	}
 
 	if (Locator::GetInputService()->IsKeyDown(KeyType::Left)) {
+		// Turn Left
 		_dir = -1;
 		Super::SetLeft(true);
 	}
@@ -203,19 +209,15 @@ void Player::UpdateState()
 
 	case(PlayerState::Ready):
 
-		if (Locator::GetInputService()->IsKeyPressed(KeyType::Right))
+		if (Locator::GetInputService()->IsKeyPressed(KeyType::Right)
+			|| Locator::GetInputService()->IsKeyPressed(KeyType::Left)
+			)
 		{
-			Run(1); 
+			Run(_dir); 
 			SetState(PlayerState::Run);
 			break;
 		}
 
-		if (Locator::GetInputService()->IsKeyPressed(KeyType::Left))
-		{
-			Run(-1);
-			SetState(PlayerState::Run);
-			break;
-		}
 
 		if (Locator::GetInputService()->IsKeyPressed(KeyType::W))
 		{
@@ -252,19 +254,14 @@ void Player::UpdateState()
 			break;
 		}
 
-		if (Locator::GetInputService()->IsKeyPressed(KeyType::Right))
+		if (Locator::GetInputService()->IsKeyPressed(KeyType::Right)
+			|| Locator::GetInputService()->IsKeyPressed(KeyType::Left))
 		{
-			Run(1);
+			Run(_dir);
 			SetState(PlayerState::Run);
 			break;
 		}
 
-		if (Locator::GetInputService()->IsKeyPressed(KeyType::Left))
-		{
-			Run(-1);
-			SetState(PlayerState::Run);
-			break;
-		}
 
 		
 		break;
@@ -281,8 +278,8 @@ void Player::UpdateState()
 
 	case(PlayerState::Hit):
 		timer = GetTimer();
-		/* 2초간 Hit 상태 유지 */
-		if (GetTimer() > 2)
+		/* 1.3초간 Hit 상태 유지 */
+		if (timer > 1300) // 2000 ms
 		{
 			SetTimer(0);
 			SetState(PlayerState::Ready);
@@ -319,9 +316,9 @@ void Player::Hit()
 void Player::Drag()
 {
 	if (_v.x < 0)
-		_v.x = min(0, _v.x + 0.7);
+		_v.x = min(0, _v.x + 1);
 	else
-		_v.x = max(0, _v.x - 0.7);
+		_v.x = max(0, _v.x - 1);
 }
 
 void Player::StopX()
@@ -337,10 +334,14 @@ void Player::Run(int32 dir)
 {
 	// 캐릭터의 방향과 진행 방향이 다르면 멈춥니다.
 	if (_v.x * dir < 0)
+	{
 		StopX();
-
-	if(abs(_v.x) < 3)
-		_v.x =  min(3, _v.x + 1.3 * dir);
+		return;
+	}
+		
+	
+	_v.x += dir * 2;
+	_v.x = ::clamp(_v.x, -3, 3);
 }
 
 void Player::TickGravity()
@@ -382,8 +383,6 @@ void Player::TickStep()
 	if (CanGo(currentCellX, nextCellY, tiles))
 	{
 		pos.y = nextY;
-		if (_state != PlayerState::Fall)
-			SetState(PlayerState::Fall);
 	}
 	else
 	{

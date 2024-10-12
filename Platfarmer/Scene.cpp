@@ -13,22 +13,17 @@ Scene::~Scene() {}
 
 void Scene::Init()
 {	
-	
-
-
 	//Load Image
-
-	
 	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\save.png",L"IMG__BG");
 
 	//Main Character
-	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\platformer-sprites\\MainCharacters\\1\\Run.png", L"Run.png");
-	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\platformer-sprites\\MainCharacters\\1\\Idle.png", L"Idle.png");
-	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\platformer-sprites\\MainCharacters\\1\\Hit.png", L"Hit.png");
-	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\platformer-sprites\\MainCharacters\\1\\Fall.png", L"Fall.png");
-	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\platformer-sprites\\MainCharacters\\1\\Jump.png", L"Jump.png");
-	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\platformer-sprites\\MainCharacters\\1\\Double_Jump.png", L"Double_Jump.png");
-	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\platformer-sprites\\MainCharacters\\1\\Wall_Jump.png", L"Wall_Jump.png");
+	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\platformer-sprites\\MainCharacters\\2\\Run.png", L"Run.png");
+	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\platformer-sprites\\MainCharacters\\2\\Idle.png", L"Idle.png");
+	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\platformer-sprites\\MainCharacters\\2\\Hit.png", L"Hit.png");
+	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\platformer-sprites\\MainCharacters\\2\\Fall.png", L"Fall.png");
+	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\platformer-sprites\\MainCharacters\\2\\Jump.png", L"Jump.png");
+	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\platformer-sprites\\MainCharacters\\2\\Double_Jump.png", L"Double_Jump.png");
+	Locator::GetLoader()->LoadImage(L"C:\\z2x7\\Resource\\platformer-sprites\\MainCharacters\\2\\Wall_Jump.png", L"Wall_Jump.png");
 
 	Locator::GetLoader()->CreateFlipbook(L"Run.png", 0, 0, 11, Vec2Int{ 32,32 });
 	Locator::GetLoader()->CreateFlipbook(L"Idle.png", 0, 0, 10, Vec2Int{ 32,32 });
@@ -77,7 +72,7 @@ void Scene::Init()
 	cactus->SetSize(Vec2Int{ 64,64 });
 	_actors.push_back(cactus);
 
-	Barrel* barrel = new Barrel(Locator::GetLoader()->FindFlipbook(L"E3_Stun.png"));
+	Barrel* barrel = new Barrel(Locator::GetLoader()->FindFlipbook(L"E3_Idle.png"));
 	barrel->SetPos(Vec2Int{ 900,892 });
 	barrel->SetSize(Vec2Int{ 64,64 });
 	_actors.push_back(barrel);
