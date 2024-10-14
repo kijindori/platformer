@@ -24,6 +24,7 @@ public:
 	void SetLayer(int32 layer);
 	double GetTimer();
 	void SetTimer(double timer);
+	Collider* GetCollider();
 
 	void AddComponent(Component* comp);
 

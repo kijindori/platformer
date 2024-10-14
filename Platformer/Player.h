@@ -40,9 +40,9 @@ public:
 	PlayerState CheckOverlap(RECT& other, RECT& intersect);
 
 	PlayerState GetState();
+	void SetState(PlayerState st);
 
 private:
-	void SetState(PlayerState st);
 	void UpdateState();
 	bool CanGo(int32 cellX, int32 cellY, vector<vector<Tile>>& tiles);
 	void StopX();
@@ -58,7 +58,7 @@ private:
 private:
 	int32 _dir = 1;
 	int32 _gravity = 1.5;
-	Vec2Int _v{ 0,0 };
+	Vec2Int _v{ 0,3 };
 
 	PlayerState _state = PlayerState::Idle;
 	vector<Flipbook*> _fbs;

@@ -28,8 +28,11 @@ Player::Player(Flipbook* fb): Super(fb)
 
 	Collider* coll = new Collider();
 	Vec2Int size = GetSize();
-	coll->SetSize(Vec2Int{ size.x, size.y });
+	coll->SetSize(Vec2Int{ size.x-10 , size.y-10});
+	coll->SetRelativePos(Vec2Int(0, -1));
 	AddComponent(coll);
+
+	SetState(PlayerState::Fall);
 }
 Player::~Player() {}
 
@@ -297,7 +300,6 @@ void Player::UpdateState()
 
 bool Player::CanGo(int32 cellX, int32 cellY, vector<vector<Tile>>& tiles)
 {
-	
 	return tiles[cellY][cellX].value != 1;
 }
 
@@ -352,7 +354,9 @@ void Player::TickGravity()
 
 void Player::TickStep()
 {
-	Vec2Int pos = GetPos();
+	/* Player의 충돌체를 기준으로 다음 스텝을 진행합니다. */
+
+	Vec2Int pos = GetCollider()->GetAbsolutePos();
 
 	Tilemap* tm = Locator::GetLoader()->FindTilemap(L"lv1-col");
 	auto& tiles = tm->GetTiles();
@@ -370,7 +374,7 @@ void Player::TickStep()
 	int32 nextCellX = nextX / tileSize.x;
 	int32 nextCellY = nextY / tileSize.y;
 
-	/* X 축 방향 이동 가능 ? */
+	/* 다음 스텝의 X축 셀 이동 가능 ? */
 	if (CanGo(nextCellX, currentCellY, tiles))
 	{
 		pos.x = nextX;
@@ -379,7 +383,7 @@ void Player::TickStep()
 	{
 
 	}
-	/* Y 축 방향 이동 가능 ? */
+	/* 다음 스텝의 Y축 셀 이동 가능 ? */
 	if (CanGo(currentCellX, nextCellY, tiles))
 	{
 		pos.y = nextY;
@@ -389,8 +393,11 @@ void Player::TickStep()
 		if (_state == PlayerState::Fall)
 		{
 			StopY();
+			
 			SetState(PlayerState::Ready);
 		}
+
+		pos.y = nextCellY * tileSize.y ;
 
 		// 마찰력 적용
 		Drag();

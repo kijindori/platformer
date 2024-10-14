@@ -64,6 +64,7 @@ void Scene::Init()
 	/* Player */
 	Player* localPlayer = new Player(Locator::GetLoader()->FindFlipbook(L"Idle.png"));
 	localPlayer->SetPos(Vec2Int{ 100,100 });
+
 	_actors.push_back(localPlayer);
 
 	/* Enemies */

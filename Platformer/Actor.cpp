@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Actor.h"
 #include "Component.h"
+#include "Collider.h"
 
 Actor::Actor() {}
 Actor::~Actor() {}
@@ -77,6 +78,17 @@ double Actor::GetTimer()
 void Actor::SetTimer(double timer)
 {
 	_timer = timer;
+}
+
+Collider* Actor::GetCollider()
+{
+	for (Component* comp : _comp)
+	{
+		if (dynamic_cast<Collider*>(comp))
+			return dynamic_cast<Collider*>(comp);
+	}
+
+	return nullptr;
 }
 
 void Actor::AddComponent(Component* comp)
