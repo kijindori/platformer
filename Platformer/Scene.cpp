@@ -61,10 +61,13 @@ void Scene::Init()
 	Locator::GetLoader()->CreateFlipbook(L"E3_Stun.png", 0, 0, 7, Vec2Int{ 48,48 });
 	Locator::GetLoader()->CreateFlipbook(L"E3_Charge.png", 0, 0, 10, Vec2Int{ 48,48 });
 
+	/* Load TILEMAP */
+	Locator::GetLoader()->LoadTilemap(L"C:\\z2x7\\Resource\\1lvl-col.txt", L"lv1-col");
+	Tilemap* tm = Locator::GetLoader()->FindTilemap(L"lv1-col");
+
 	/* Player */
 	Player* localPlayer = new Player(Locator::GetLoader()->FindFlipbook(L"Idle.png"));
 	localPlayer->SetPos(Vec2Int{ 100,100 });
-
 	_actors.push_back(localPlayer);
 
 	/* Enemies */
@@ -84,27 +87,23 @@ void Scene::Init()
 	/* Background Image */
 	_bgImage = (Gdiplus::Image*)Locator::GetLoader()->FindImage(L"IMG__BG");
 
-	/* Load TILEMAP */
-	Locator::GetLoader()->LoadTilemap(L"C:\\z2x7\\Resource\\1lvl-col.txt", L"lv1-col");
-
-	/* WALL */
-	Tilemap* tm = Locator::GetLoader()->FindTilemap(L"lv1-col");
-
+	
 }
 
 void Scene::Update()
 {
+	/* Actor 업데이트 -> 컴포넌트 업데이트 */
 	for(Actor* actor : _actors)
 		actor->Update();
 }
 
 void Scene::Render(Gdiplus::Graphics* g)
 {
-
+	// 카메라의 위치를 기준으로 렌더링
 	Locator::GetCamera()->UpdatePos();
 	Vec2Int camPos = Locator::GetCamera()->GetPos();
 
-	//BACKGROUND IMAGE
+	// BACKGROUND IMAGE
 	Rect drawRect(0, 0, CLIENT_WIDTH, CLIENT_HEIGHT);
 	if (_bgImage && _bgImage->GetLastStatus() == Ok) {
 		g->DrawImage(_bgImage, drawRect, camPos.x - CLIENT_WIDTH / 2, camPos.y - CLIENT_HEIGHT / 2 , CLIENT_WIDTH, CLIENT_HEIGHT, UnitPixel);

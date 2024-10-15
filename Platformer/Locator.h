@@ -10,6 +10,8 @@ class Collision;
 class Locator
 {
 public:
+	static void Init(HWND hWnd);
+
 	static AudioService* GetAudioService() { return _audioService; }
 	static void provideAudioService(AudioService* audioService) { _audioService = audioService; }
 

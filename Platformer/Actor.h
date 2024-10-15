@@ -15,19 +15,25 @@ public:
 	virtual void Update();
 	virtual void Render(Gdiplus::Graphics* g);
 
-
+	/* GETTER , SETTER */
 	Vec2Int GetPos();
 	void SetPos(Vec2Int pos);
+
 	Vec2Int GetSize();
 	void SetSize(Vec2Int size);
+
 	int32 GetLayer();
 	void SetLayer(int32 layer);
+
 	double GetTimer();
 	void SetTimer(double timer);
+
 	Collider* GetCollider();
 
+	/* 컴포넌트 추가 : 현재는 충돌체만 추가 */
 	void AddComponent(Component* comp);
 
+	/* 충돌 관련 핸들러 */
 	virtual void OnBeginOverlapped(Collider* src, Collider* dest);
 	virtual void OnOverlapping(Collider* src, Collider* dest);
 	virtual void OnEndOverlapped(Collider* src, Collider* dest);

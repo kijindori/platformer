@@ -22,8 +22,6 @@ public:
 	void SetFlipbook(Flipbook* fb);
 	void SetIndex(uint32 index) { _index = index; }
 
-
-
 private:
 	Flipbook* _fb = nullptr;
 	uint32 _index = 0;

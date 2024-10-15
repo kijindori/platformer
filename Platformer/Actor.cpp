@@ -42,8 +42,12 @@ Vec2Int Actor::GetPos()
 }
 
 void Actor::SetPos(Vec2Int pos)
-{
+{	
+	
 	_pos = pos;
+	_pos.x = ::clamp(_pos.x, 0, MAP_WIDTH);
+	_pos.y = ::clamp(_pos.y, 0, MAP_HEIGHT);
+
 	for (Component* comp : _comp)
 		comp->UpdateAbsolutePos();
 }
