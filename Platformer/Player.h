@@ -44,7 +44,7 @@ public:
 
 private:
 	void UpdateState();
-	bool CanGo(int32 cellX, int32 cellY, vector<vector<Tile>>& tiles);
+	bool CanGo(int32 currentX, int32 currentY, int32 targetX, int32 targetY, vector<vector<Tile>>& tiles);
 	void StopX();
 	void StopY();
 	void Run(int32 dir);

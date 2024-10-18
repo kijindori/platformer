@@ -69,8 +69,6 @@ void Player::Render(Gdiplus::Graphics* g)
 
 void Player::OnBeginOverlapped(Collider* src, Collider* dest)
 {
-	
-
 	RECT intersect{};
 	::IntersectRect(&intersect, src->GetRect(), dest->GetRect());
 
@@ -78,7 +76,6 @@ void Player::OnBeginOverlapped(Collider* src, Collider* dest)
 	int32 h = intersect.bottom - intersect.top;
 
 	RECT other = *dest->GetRect();
-
 	Vec2Int myPosition = GetPos();
 
 	PlayerState state = CheckOverlap(other, intersect);
@@ -86,33 +83,32 @@ void Player::OnBeginOverlapped(Collider* src, Collider* dest)
 	switch (state)
 	{
 	case(PlayerState::OnGround):
-		//myPosition.y -= h;
+		if (dynamic_cast<Barrel*>(dest->GetOwner()) || dynamic_cast<Cactus*>(dest->GetOwner()))
+		{
+			SetState(PlayerState::DoubleJump);
+			_v.y = -7;
+		}
 		break;
 
 	case(PlayerState::UnderGround):
-		//myPosition.y += h;
 		break;
 
 	case(PlayerState::LeftGround):
-		//myPosition.x -= w;
 		break;
 
 	case(PlayerState::RightGround):
-		//myPosition.x += w;
 		break;
 	}
-
-	//SetPos(myPosition);
-	//SetState(PlayerState::Ready);
 }
 
 // 충돌 중에 위치 조정
 void Player::OnOverlapping(Collider* src, Collider* dest)
 {
+	
 	if (dynamic_cast<Barrel*>(dest->GetOwner()) || dynamic_cast<Cactus*>(dest->GetOwner()))
 	{
 
-		if (_state != PlayerState::Hit)
+		if (_state != PlayerState::Hit && _state != PlayerState::DoubleJump )
 		{
 			Hit();
 			SetState(PlayerState::Hit);
@@ -293,14 +289,34 @@ void Player::UpdateState()
 		break;
 
 	case(PlayerState::Fall):
-		if (_v.y <= 0)
-			SetState(PlayerState::Ready);
+		;
 	}
 }
 
-bool Player::CanGo(int32 cellX, int32 cellY, vector<vector<Tile>>& tiles)
+bool Player::CanGo(int32 currentX, int32 currentY, int32 targetX, int32 targetY, vector<vector<Tile>>& tiles)
 {
-	return tiles[cellY][cellX].value != 1;
+	/* 
+		현재 셀과 타겟 셀 사이에 벽이 위치하는지 확인
+		X축 혹은 Y축 상의 일직선 경로가 주어진다고 가정합니다. 
+	*/
+
+	/* 일직선 경로임을 확인 */
+	assert(currentX == targetX || currentY == targetY);
+
+	if (currentX != targetX)
+	{
+		for (int i = min(currentX, targetX); i <= max(currentX, targetX) ; i++)
+			if (tiles[targetY][i].value == 1)
+				return false;
+	}
+	else
+	{
+		for (int i = min(currentY, targetY); i <= max(currentY, targetY); i++)
+			if (tiles[i][currentX].value == 1)
+				return false;
+	}
+
+	return true;
 }
 
 void Player::Jump()
@@ -343,7 +359,7 @@ void Player::Run(int32 dir)
 		
 	
 	_v.x += dir * 2;
-	_v.x = ::clamp(_v.x, -3, 3);
+	_v.x = ::clamp(_v.x, -5, 5);
 }
 
 void Player::TickGravity()
@@ -352,10 +368,9 @@ void Player::TickGravity()
 		_v.y = min(11, _v.y + _gravity);
 }
 
+/* Player의 충돌체를 기준으로 다음 스텝을 진행하고 충돌하는지 확인합니다. */
 void Player::TickStep()
 {
-	/* Player의 충돌체를 기준으로 다음 스텝을 진행합니다. */
-
 	Vec2Int pos = GetCollider()->GetAbsolutePos();
 
 	Tilemap* tm = Locator::GetLoader()->FindTilemap(L"lv1-col");
@@ -363,8 +378,11 @@ void Player::TickStep()
 	Vec2Int msize = tm->GetMapSize();
 	Vec2Int tileSize = tm->GetTileSize();
 
-	int32 nextX = pos.x + _v.x;
-	int32 nextY = pos.y + _v.y;
+	int32 sizeX = GetSize().x;
+	int32 sizeY = GetSize().y;
+
+	int32 nextX = _v.x > 0 ? pos.x + 1 + sizeX / 2  : pos.x - 1 - sizeX / 2;
+	int32 nextY = _v.y > 0 ? pos.y + 1 : pos.y - sizeY - 1;
 
 	/* 현재 위치한 셀 좌표 */
 	int32 currentCellX = pos.x / tileSize.x;
@@ -375,32 +393,45 @@ void Player::TickStep()
 	int32 nextCellY = nextY / tileSize.y;
 
 	/* 다음 스텝의 X축 셀 이동 가능 ? */
-	if (CanGo(nextCellX, currentCellY, tiles))
+	if ( CanGo( currentCellX, currentCellY, nextCellX, currentCellY, tiles ))
 	{
-		pos.x = nextX;
+		pos.x = pos.x + _v.x;
 	}
 	else
 	{
 
 	}
+
 	/* 다음 스텝의 Y축 셀 이동 가능 ? */
-	if (CanGo(currentCellX, nextCellY, tiles))
+	if (CanGo( currentCellX, currentCellY, currentCellX, nextCellY, tiles ))
 	{
-		pos.y = nextY;
+		pos.y = pos.y + _v.y;
 	}
 	else
 	{
-		if (_state == PlayerState::Fall)
+		switch (_state)
 		{
+		case(PlayerState::Fall):
 			StopY();
-			
+			SetState(PlayerState::Ready);
+			break;
+
+		case(PlayerState::Jump):
+			StopY();
+			SetState(PlayerState::Fall);
+			break;
+
+		case(PlayerState::DoubleJump):
+			StopY();
 			SetState(PlayerState::Ready);
 		}
 
-		pos.y = nextCellY * tileSize.y ;
-
-		// 마찰력 적용
-		Drag();
+		if (_v.y > 0)
+		{
+			pos.y = nextCellY * tileSize.y;
+			Drag();
+		}
+			
 	}
 
 	SetPos(pos);
