@@ -17,6 +17,7 @@ enum class PlayerState
 	UnderGround,
 	LeftGround,
 	RightGround,
+	Stuck,
 
 
 	End,
@@ -44,7 +45,7 @@ public:
 
 private:
 	void UpdateState();
-	bool CanGo(int32 currentX, int32 currentY, int32 targetX, int32 targetY, vector<vector<Tile>>& tiles);
+	bool CanGo(int32 cellX, int32 cellY, vector<vector<Tile>>& tiles);
 	void StopX();
 	void StopY();
 	void Run(int32 dir);
@@ -57,7 +58,7 @@ private:
 
 private:
 	int32 _dir = 1;
-	int32 _gravity = 1.5;
+	int32 _gravity = 1;
 	Vec2Int _v{ 0,3 };
 
 	PlayerState _state = PlayerState::Idle;

@@ -28,7 +28,7 @@ Player::Player(Flipbook* fb): Super(fb)
 
 	Collider* coll = new Collider();
 	Vec2Int size = GetSize();
-	coll->SetSize(Vec2Int{ size.x-10 , size.y-10});
+	coll->SetSize(Vec2Int{ size.x-30 , size.y-10});
 	coll->SetRelativePos(Vec2Int(0, -1));
 	AddComponent(coll);
 
@@ -232,7 +232,7 @@ void Player::UpdateState()
 		if (Locator::GetInputService()->IsKeyIdle(KeyType::Right)
 			&& Locator::GetInputService()->IsKeyIdle(KeyType::Left))
 		{
-			_v.x = 0; 
+			StopX();
 			SetState(PlayerState::Idle);
 			break;
 		}
@@ -241,7 +241,7 @@ void Player::UpdateState()
 			&& Locator::GetInputService()->IsKeyPressed(KeyType::Left)
 			)
 		{
-			_v.x = 0; 
+			StopX();
 			SetState(PlayerState::Idle);
 			break;
 		}
@@ -293,50 +293,32 @@ void Player::UpdateState()
 	}
 }
 
-bool Player::CanGo(int32 currentX, int32 currentY, int32 targetX, int32 targetY, vector<vector<Tile>>& tiles)
+bool Player::CanGo(int32 cellX, int32 cellY, vector<vector<Tile>>& tiles)
 {
-	/* 
-		현재 셀과 타겟 셀 사이에 벽이 위치하는지 확인
-		X축 혹은 Y축 상의 일직선 경로가 주어진다고 가정합니다. 
-	*/
-
-	/* 일직선 경로임을 확인 */
-	assert(currentX == targetX || currentY == targetY);
-
-	if (currentX != targetX)
-	{
-		for (int i = min(currentX, targetX); i <= max(currentX, targetX) ; i++)
-			if (tiles[targetY][i].value == 1)
-				return false;
-	}
-	else
-	{
-		for (int i = min(currentY, targetY); i <= max(currentY, targetY); i++)
-			if (tiles[i][currentX].value == 1)
-				return false;
-	}
-
+	
+	if (tiles[cellY][cellX].value == 1)
+		return false;
+	
 	return true;
 }
 
 void Player::Jump()
 {
-	_v.y = -13; // jump
-	//_gravity = 1.5;
+	_v.y = -13;
 }
 
 void Player::Hit()
 {
-	_v.x = _dir * -3;
+	_v.x = _dir * -3.0;
 	_v.y = -9;
 }
 
 void Player::Drag()
 {
 	if (_v.x < 0)
-		_v.x = min(0, _v.x + 1);
+		_v.x = min(0, _v.x + .7);
 	else
-		_v.x = max(0, _v.x - 1);
+		_v.x = max(0, _v.x - .7);
 }
 
 void Player::StopX()
@@ -358,8 +340,9 @@ void Player::Run(int32 dir)
 	}
 		
 	
-	_v.x += dir * 2;
-	_v.x = ::clamp(_v.x, -5, 5);
+	_v.x += dir * 2.0;
+	_v.x = (_v.x < -5)	? -5 : _v.x;
+	_v.x = (_v.x > 5)	?  5 : _v.x;
 }
 
 void Player::TickGravity()
@@ -375,44 +358,48 @@ void Player::TickStep()
 
 	Tilemap* tm = Locator::GetLoader()->FindTilemap(L"lv1-col");
 	auto& tiles = tm->GetTiles();
-	Vec2Int msize = tm->GetMapSize();
 	Vec2Int tileSize = tm->GetTileSize();
 
-	int32 sizeX = GetSize().x;
-	int32 sizeY = GetSize().y;
+	int32 sizeX = GetCollider()->GetSize().x;
+	int32 sizeY = GetCollider()->GetSize().y;
 
-	int32 nextX = _v.x > 0 ? pos.x + 1 + sizeX / 2  : pos.x - 1 - sizeX / 2;
-	int32 nextY = _v.y > 0 ? pos.y + 1 : pos.y - sizeY - 1;
+
+	int32 nextX = _v.x > 0 ? pos.x + sizeX / 2 + _v.x  : pos.x - sizeX / 2 + _v.x ;
+	int32 nextY = _v.y > 0 ? pos.y + _v.y : pos.y - sizeY + _v.y;
 
 	/* 현재 위치한 셀 좌표 */
-	int32 currentCellX = pos.x / tileSize.x;
-	int32 currentCellY = pos.y / tileSize.y;
+	//TODO : 식 정리
+	int32 currentCellX = _dir > 0 ? (pos.x + sizeX / 2) / tileSize.x : (pos.x - sizeX/2) / tileSize.x;
+	int32 currentCellXForCheckFalling = pos.x / tileSize.x;
+	int32 currentCellY = _v.y > 0 ?  pos.y / tileSize.y : (pos.y - sizeY) / tileSize.y;
 
 	/* 다음 스텝의 셀 좌표 */
 	int32 nextCellX = nextX / tileSize.x;
 	int32 nextCellY = nextY / tileSize.y;
 
+	bool canGoX = CanGo(nextCellX, currentCellY, tiles);
+	bool canGoY = CanGo(currentCellXForCheckFalling , nextCellY, tiles);
+
 	/* 다음 스텝의 X축 셀 이동 가능 ? */
-	if ( CanGo( currentCellX, currentCellY, nextCellX, currentCellY, tiles ))
+	if ( canGoX )
 	{
-		pos.x = pos.x + _v.x;
+		pos.x += _v.x;
 	}
 	else
 	{
-
+		
 	}
 
 	/* 다음 스텝의 Y축 셀 이동 가능 ? */
-	if (CanGo( currentCellX, currentCellY, currentCellX, nextCellY, tiles ))
+	if ( canGoY )
 	{
-		pos.y = pos.y + _v.y;
+		pos.y += _v.y;
 	}
 	else
 	{
 		switch (_state)
 		{
 		case(PlayerState::Fall):
-			StopY();
 			SetState(PlayerState::Ready);
 			break;
 
@@ -424,11 +411,12 @@ void Player::TickStep()
 		case(PlayerState::DoubleJump):
 			StopY();
 			SetState(PlayerState::Ready);
+		
 		}
 
 		if (_v.y > 0)
 		{
-			pos.y = nextCellY * tileSize.y;
+			pos.y = nextCellY * tileSize.y - 1;
 			Drag();
 		}
 			
