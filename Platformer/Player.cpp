@@ -10,7 +10,7 @@ Player::Player(Flipbook* fb): Super(fb)
 		플레이어 생성,
 		Size : 48X48 
 		각 상태 별 애니메이션을 가져오고,
-		Collider 를 추가합니다.
+		충돌체를 추가합니다.
 	*/
 
 	SetSize(Vec2Int{ 48,48 });
@@ -34,6 +34,7 @@ Player::Player(Flipbook* fb): Super(fb)
 
 	SetState(PlayerState::Fall);
 }
+
 Player::~Player() {}
 
 
@@ -41,7 +42,6 @@ void Player::Init()
 {
 	Super::Init();
 
-	
 }
 
 
@@ -67,7 +67,7 @@ void Player::Render(Gdiplus::Graphics* g)
 	Super::Render(g);
 }
 
-void Player::OnBeginOverlapped(Collider* src, Collider* dest)
+void Player::OnBeginCollision(Collider* src, Collider* dest)
 {
 	RECT intersect{};
 	::IntersectRect(&intersect, src->GetRect(), dest->GetRect());
@@ -83,10 +83,10 @@ void Player::OnBeginOverlapped(Collider* src, Collider* dest)
 	switch (state)
 	{
 	case(PlayerState::OnGround):
-		if (dynamic_cast<Barrel*>(dest->GetOwner()) || dynamic_cast<Cactus*>(dest->GetOwner()))
+		if (dynamic_cast<Barrel*>(dest->GetOwner()))
 		{
 			SetState(PlayerState::DoubleJump);
-			_v.y = -7;
+			_v.y = -17;
 		}
 		break;
 
@@ -102,22 +102,22 @@ void Player::OnBeginOverlapped(Collider* src, Collider* dest)
 }
 
 // 충돌 중에 위치 조정
-void Player::OnOverlapping(Collider* src, Collider* dest)
+void Player::OnColliding(Collider* src, Collider* dest)
 {
 	
-	if (dynamic_cast<Barrel*>(dest->GetOwner()) || dynamic_cast<Cactus*>(dest->GetOwner()))
-	{
+	
 
-		if (_state != PlayerState::Hit && _state != PlayerState::DoubleJump )
+	if (dynamic_cast<Cactus*>(dest->GetOwner()))
+	{
+		if (_state != PlayerState::Hit && _state != PlayerState::DoubleJump)
 		{
 			Hit();
 			SetState(PlayerState::Hit);
 		}
-
 	}
 }
 
-void Player::OnEndOverlapped(Collider* src, Collider* dest)
+void Player::OnEndCollision(Collider* src, Collider* dest)
 {
 	
 }
@@ -270,6 +270,15 @@ void Player::UpdateState()
 			SetState(PlayerState::Fall);
 
 		break;
+	
+	case(PlayerState::DoubleJump):
+		if (Locator::GetInputService()->IsKeyPressed(KeyType::Right)
+			|| Locator::GetInputService()->IsKeyPressed(KeyType::Left)
+			)
+		{
+			SlowMove(_dir);
+		}
+		break;
 
 	case(PlayerState::OnGround):
 		SetState(PlayerState::Ready);
@@ -278,7 +287,7 @@ void Player::UpdateState()
 	case(PlayerState::Hit):
 		timer = GetTimer();
 		/* 1.3초간 Hit 상태 유지 */
-		if (timer > 1300) // 2000 ms
+		if (timer > 1300)
 		{
 			SetTimer(0);
 			SetState(PlayerState::Ready);
@@ -291,6 +300,12 @@ void Player::UpdateState()
 	case(PlayerState::Fall):
 		;
 	}
+}
+
+void Player::SlowMove(int _dir)
+{
+	if(abs(_v.x) < 10)
+		_v.x += _dir;
 }
 
 bool Player::CanGo(int32 cellX, int32 cellY, vector<vector<Tile>>& tiles)
@@ -351,7 +366,7 @@ void Player::TickGravity()
 		_v.y = min(11, _v.y + _gravity);
 }
 
-/* Player의 충돌체를 기준으로 다음 스텝을 진행하고 충돌하는지 확인합니다. */
+/* Player의 충돌체를 기준으로 다음 스텝을 진행하고 벽에 부딪히는지 확인합니다. */
 void Player::TickStep()
 {
 	Vec2Int pos = GetCollider()->GetAbsolutePos();
@@ -387,7 +402,7 @@ void Player::TickStep()
 	}
 	else
 	{
-		
+		StopX();
 	}
 
 	/* 다음 스텝의 Y축 셀 이동 가능 ? */

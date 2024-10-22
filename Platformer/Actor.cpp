@@ -102,15 +102,15 @@ void Actor::AddComponent(Component* comp)
 	_comp.push_back(comp);
 }
 
-void Actor::OnBeginOverlapped(Collider* src, Collider* dest)
+void Actor::OnBeginCollision(Collider* src, Collider* dest)
 {
 }
 
-void Actor::OnOverlapping(Collider* src, Collider* dest)
+void Actor::OnColliding(Collider* src, Collider* dest)
 {
 }
 
-void Actor::OnEndOverlapped(Collider* src, Collider* dest)
+void Actor::OnEndCollision(Collider* src, Collider* dest)
 {
 }
 

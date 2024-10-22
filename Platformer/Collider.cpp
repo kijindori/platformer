@@ -33,9 +33,9 @@ void Collider::Update()
 
 void Collider::Render(Graphics* g)
 {
-	/* Render if debug mode set true */
-	//if (!_debug)
-	//	return;
+	/* 디버그 모드에서 충돌체 테두리 표시 */
+	if (!_debug)
+		return;
 
 	Vec2Int pos = GetAbsolutePos();
 	Vec2Int OwnerPos = GetOwner()->GetPos();
@@ -91,7 +91,6 @@ bool Collider::CheckCollision(Collider* other)
 void Collider::SetFlag(CollisionGroup g)
 {
 	BYTE groupBit = 1 << (uint8)g;
-
 	_flag |= groupBit;
 }
 

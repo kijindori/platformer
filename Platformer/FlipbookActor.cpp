@@ -55,17 +55,19 @@ void FlipbookActor::Render(Gdiplus::Graphics* g)
 	);
 }
 
-void FlipbookActor::OnBeginOverlapped(Collider* src, Collider* dest)
+void FlipbookActor::OnBeginCollision(Collider* src, Collider* dest)
 {
 }
 
-void FlipbookActor::OnOverlapping(Collider* src, Collider* dest)
+void FlipbookActor::OnColliding(Collider* src, Collider* dest)
 {
 }
 
-void FlipbookActor::OnEndOverlapped(Collider* src, Collider* dest)
+void FlipbookActor::OnEndCollision(Collider* src, Collider* dest)
 {
 }
+
+
 
 void FlipbookActor::SetLeft(bool flag)
 {

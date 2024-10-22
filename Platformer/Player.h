@@ -34,9 +34,9 @@ public:
 	virtual void Update() override;
 	virtual void Render(Graphics* g) override;
 
-	virtual void OnBeginOverlapped(Collider* src, Collider* dest) override;
-	virtual void OnOverlapping(Collider* src, Collider* dest) override;
-	virtual void OnEndOverlapped(Collider* src, Collider* dest) override;
+	virtual void OnBeginCollision(Collider* src, Collider* dest) override;
+	virtual void OnColliding(Collider* src, Collider* dest) override;
+	virtual void OnEndCollision(Collider* src, Collider* dest) override;
 
 	PlayerState CheckOverlap(RECT& other, RECT& intersect);
 
@@ -54,6 +54,7 @@ private:
 	void Drag();
 	void TickGravity();
 	void TickStep();
+	void SlowMove(int _dir);
 
 
 private:

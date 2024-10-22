@@ -23,7 +23,7 @@ void Game::Init(HWND hWnd)
 	HBITMAP oldBackBit = (HBITMAP)SelectObject(_hdcBackBuffer, backbit);
 	DeleteObject(oldBackBit);
 
-	/* GDI + 초기화 */
+	/* Gdiplus 초기화 */
 	GdiplusStartupInput gdiplusStartupInput;
 	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
 	_g = Gdiplus::Graphics::FromHDC(_hdcBackBuffer);

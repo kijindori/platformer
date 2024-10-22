@@ -35,13 +35,13 @@ void Collision::Iterate()
 			{
 				if (src->Find(dest))
 				{
-					src->GetOwner()->OnOverlapping(src, dest);
-					dest->GetOwner()->OnOverlapping(src, dest);
+					src->GetOwner()->OnColliding(src, dest);
+					dest->GetOwner()->OnColliding(src, dest);
 				}
 				else
 				{
-					src->GetOwner()->OnBeginOverlapped(src, dest);
-					dest->GetOwner()->OnBeginOverlapped(src, dest);
+					src->GetOwner()->OnBeginCollision(src, dest);
+					dest->GetOwner()->OnBeginCollision(src, dest);
 					src->InsertCollided(dest);
 					dest->InsertCollided(src);
 
@@ -51,8 +51,8 @@ void Collision::Iterate()
 			{
 				if (src->Find(dest))
 				{
-					src->GetOwner()->OnEndOverlapped(src, dest);
-					dest->GetOwner()->OnEndOverlapped(src, dest);
+					src->GetOwner()->OnEndCollision(src, dest);
+					dest->GetOwner()->OnEndCollision(src, dest);
 					src->RemoveCollided(dest);
 					dest->RemoveCollided(src);
 				}
