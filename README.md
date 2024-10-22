@@ -6,7 +6,7 @@
   Windows Api, Gdiplus
 
 ## MAIN ENTRY
-Platformer.cpp :: WINAPI MAIN ENTRY
+Platformer.cpp :: WINAPI MAIN ENTRY, 이벤트 루프    
 Game.cpp
 
 ### Scene    
