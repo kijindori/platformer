@@ -3,6 +3,7 @@
 *.vcxproj.*
 *.exe
 *.ico
+*.sln
 x64/*
 Platfarmer/*
 Platformer/*
