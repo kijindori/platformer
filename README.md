@@ -1,9 +1,6 @@
 # Platformer
 
 ## WIN32 API 기반 플랫포머 게임
-## 사용 언어 : C++
-## 의존 라이브러리
-  Windows Api, Gdiplus
 
 ## MAIN ENTRY
 Platformer.cpp :: WINAPI MAIN ENTRY, 이벤트 루프    
