@@ -5,9 +5,11 @@
 #include "AudioService.h"
 #include "TilemapService.h"
 #include "Collision.h"
+#include "Session.h"
 
 void Game::Init(HWND hWnd)
 {
+
 	/* WINAPI 관련 초기화 */
 	_hWnd = hWnd;
 	_hdc = ::GetDC(hWnd);
@@ -33,7 +35,7 @@ void Game::Init(HWND hWnd)
 	Locator::Init(_hWnd);
 
 	/* Scene 초기화 : 리소스를 로드하고 Actor 들을 배치합니다. */
-	_scene->Init();
+	Locator::GetScene()->Init();
 }
 
 
@@ -47,7 +49,7 @@ void Game::Update()
 	Locator::GetTimer()->Update();
 
 	/* Scene 업데이트 -> Actor 업데이트 */
-	_scene->Update();
+	Locator::GetScene()->Update();
 
 	/* 충돌 감지 */
 	Locator::GetCollisionService()->Iterate();
@@ -56,9 +58,9 @@ void Game::Update()
 void Game::Render()
 {
 	/* Graphics _g : 후면 버퍼에 렌더링 */
-	_scene->Render(_g);
+	Locator::GetScene()->Render(_g);
 
-	// 후면 버퍼를 전면 버퍼로 옮기고 BLACKNESS 초기화
+	// 후면 버퍼를 전면 버퍼로 옮기고 초기화
 	BitBlt(_hdc, 0, 0, _width, _height, _hdcBackBuffer, 0, 0, SRCCOPY);
 	PatBlt(_hdcBackBuffer, 0, 0, _width, _height, BLACKNESS);
 }

@@ -18,7 +18,15 @@ void FlipbookActor::Init()
 void FlipbookActor::Update()
 {
 	Super::Update();
-	_index = (_index + 1) % (_fb->_end - _fb->_start + 1);
+	double interval = _fb->_interval;
+	double timer = GetTimer() + Locator::GetTimer()->GetInterval();
+	
+	if (timer > interval)
+	{
+		_index = (_index + 1) % (_fb->_end - _fb->_start + 1);
+		timer -= interval;
+	}
+	SetTimer(timer);
 }
 
 void FlipbookActor::Render(Gdiplus::Graphics* g)
@@ -78,5 +86,10 @@ void FlipbookActor::SetFlipbook(Flipbook* fb)
 {
 	_fb = fb;
 	_index = 0;
+}
+
+uint32 FlipbookActor::GetIndex()
+{
+	return _index;
 }
 

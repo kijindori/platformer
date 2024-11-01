@@ -4,7 +4,7 @@
 #include "Barrel.h"
 #include "Cactus.h"
 
-Player::Player(Flipbook* fb): Super(fb)
+Player::Player(Flipbook* fb, Vec2Int pos): Super(fb)
 {
 	/*
 		플레이어 생성,
@@ -14,24 +14,25 @@ Player::Player(Flipbook* fb): Super(fb)
 	*/
 
 	SetSize(Vec2Int{ 48,48 });
+	SetPos(pos);
 
 	_fbs.resize((int32)PlayerState::End);
 
-	_fbs[(int32)PlayerState::Idle] = Locator::GetLoader()->FindFlipbook(L"Idle.png");
-	_fbs[(int32)PlayerState::Ready] = Locator::GetLoader()->FindFlipbook(L"Idle.png");
-	_fbs[(int32)PlayerState::Run] = Locator::GetLoader()->FindFlipbook(L"Run.png");
-	_fbs[(int32)PlayerState::Jump] = Locator::GetLoader()->FindFlipbook(L"Jump.png");
-	_fbs[(int32)PlayerState::DoubleJump] = Locator::GetLoader()->FindFlipbook(L"Double_Jump.png");
-	_fbs[(int32)PlayerState::WallJump] = Locator::GetLoader()->FindFlipbook(L"Wall_Jump.png");
-	_fbs[(int32)PlayerState::Hit] = Locator::GetLoader()->FindFlipbook(L"Hit.png");
-	_fbs[(int32)PlayerState::Fall] = Locator::GetLoader()->FindFlipbook(L"Fall.png");
+	_fbs[(int32)PlayerState::Idle]			= Locator::GetLoader()->FindFlipbook(L"Idle.png");
+	_fbs[(int32)PlayerState::Ready]			= Locator::GetLoader()->FindFlipbook(L"Idle.png");
+	_fbs[(int32)PlayerState::Run]			= Locator::GetLoader()->FindFlipbook(L"Run.png");
+	_fbs[(int32)PlayerState::Jump]			= Locator::GetLoader()->FindFlipbook(L"Jump.png");
+	_fbs[(int32)PlayerState::DoubleJump]	= Locator::GetLoader()->FindFlipbook(L"Double_Jump.png");
+	_fbs[(int32)PlayerState::WallJump]		= Locator::GetLoader()->FindFlipbook(L"Wall_Jump.png");
+	_fbs[(int32)PlayerState::Hit]			= Locator::GetLoader()->FindFlipbook(L"Hit.png");
+	_fbs[(int32)PlayerState::Fall]			= Locator::GetLoader()->FindFlipbook(L"Fall.png");
 
 	Collider* coll = new Collider();
 	Vec2Int size = GetSize();
 	coll->SetSize(Vec2Int{ size.x-30 , size.y-10});
 	coll->SetRelativePos(Vec2Int(0, -1));
+	
 	AddComponent(coll);
-
 	SetState(PlayerState::Fall);
 }
 
@@ -41,7 +42,6 @@ Player::~Player() {}
 void Player::Init()
 {
 	Super::Init();
-
 }
 
 
@@ -105,8 +105,6 @@ void Player::OnBeginCollision(Collider* src, Collider* dest)
 void Player::OnColliding(Collider* src, Collider* dest)
 {
 	
-	
-
 	if (dynamic_cast<Cactus*>(dest->GetOwner()))
 	{
 		if (_state != PlayerState::Hit && _state != PlayerState::DoubleJump)
@@ -153,6 +151,20 @@ PlayerState Player::CheckOverlap(RECT& other, RECT& intersect)
 	}
 }
 
+void Player::Serialize(BYTE* data)
+{
+	PlayerData temp;
+	temp.id			= GetId();
+	temp.x			= GetPos().x;
+	temp.y			= GetPos().y;
+	temp.state		= (uint32)GetState();
+	temp.index		= GetIndex();
+	temp.direction  = GetDirection();
+
+	::memcpy(data, &temp, sizeof(temp));
+}
+
+
 PlayerState Player::GetState()
 {
 	return _state;
@@ -171,6 +183,11 @@ void Player::SetState(PlayerState st)
 
 	_state = st;
 	
+}
+
+int32 Player::GetDirection()
+{
+	return _dir;
 }
 
 void Player::UpdateState()
@@ -285,16 +302,16 @@ void Player::UpdateState()
 		break;
 
 	case(PlayerState::Hit):
-		timer = GetTimer();
+		timer = GetHitTimer();
 		/* 1.3초간 Hit 상태 유지 */
 		if (timer > 1300)
 		{
-			SetTimer(0);
+			SetHitTimer(0);
 			SetState(PlayerState::Ready);
 		}
 		else
 			/* TICK */
-			SetTimer( timer + Locator::GetTimer()->GetInterval() );
+			SetHitTimer( timer + Locator::GetTimer()->GetInterval() );
 		break;
 
 	case(PlayerState::Fall):
@@ -304,7 +321,7 @@ void Player::UpdateState()
 
 void Player::SlowMove(int _dir)
 {
-	if(abs(_v.x) < 10)
+	if(abs(_v.x) < 5)
 		_v.x += _dir;
 }
 
@@ -355,7 +372,7 @@ void Player::Run(int32 dir)
 	}
 		
 	
-	_v.x += dir * 2.0;
+	_v.x += dir * 2;
 	_v.x = (_v.x < -5)	? -5 : _v.x;
 	_v.x = (_v.x > 5)	?  5 : _v.x;
 }

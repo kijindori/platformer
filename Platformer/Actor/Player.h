@@ -23,11 +23,21 @@ enum class PlayerState
 	End,
 };
 
+struct PlayerData
+{
+	uint32		id;
+	uint32		x;
+	uint32		y;
+	uint32		state;
+	uint32		index;
+	int32		direction;
+};
+
 class Player : public FlipbookActor
 {
 	using Super = FlipbookActor;
 public:
-	Player(Flipbook* fb);
+	Player(Flipbook* fb, Vec2Int pos);
 	virtual ~Player();
 
 	virtual void Init() override;
@@ -39,9 +49,15 @@ public:
 	virtual void OnEndCollision(Collider* src, Collider* dest) override;
 
 	PlayerState CheckOverlap(RECT& other, RECT& intersect);
+	
+
+	void Serialize(BYTE* data);
+
+
 
 	PlayerState GetState();
 	void SetState(PlayerState st);
+	int32 GetDirection();
 
 private:
 	void UpdateState();
@@ -58,9 +74,10 @@ private:
 
 
 private:
+	
 	int32 _dir = 1;
 	int32 _gravity = 1;
-	Vec2Int _v{ 0,3 };
+	Vec2Int _v{ 0,0 };
 
 	PlayerState _state = PlayerState::Idle;
 	vector<Flipbook*> _fbs;

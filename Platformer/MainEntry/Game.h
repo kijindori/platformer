@@ -1,7 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "Scene.h"
-
+#include "Session.h"
 class Game
 {
 public:
@@ -23,8 +23,6 @@ private:
 	
 	int32	_width			= 0;
 	int32	_height			= 0;
-
-	Scene*	_scene			= new Scene();
 
 	RECT	_clientRect{0,0};
 	
