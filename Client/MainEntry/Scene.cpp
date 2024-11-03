@@ -5,8 +5,6 @@
 #include "Cactus.h"
 #include "Barrel.h"
 
-
-
 Scene::Scene() {}
 Scene::~Scene() 
 {
@@ -23,8 +21,66 @@ Scene::~Scene()
 
 void Scene::Init()
 {	
+	LoadResource();
+	_bgImage = (Gdiplus::Image*)Locator::GetLoader()->FindImage(L"IMG__BG");
+
+	/* 로컬 플레이어 캐릭터 생성 */
+	Player* localPlayer = SpawnLocalPlayer();
+	Locator::provideCamera(new Camera(localPlayer));
+
+	/* 오브젝트 생성 */
+	SpawnMonsters();
+}
+
+void Scene::Update()
+{
+	_localPlayer->Update();
+	SendPlayerDataToServer();
+
+	Locator::GetSession()->UpdateScene(this);
+
+	for (Actor* actor : _actors)
+		actor->Update();
+
+}
+
+Player* Scene::FindPlayerById(uint32 id)
+{
+	auto it = _players.find(id);
+
+	if (it == _players.end())
+		return nullptr;
+
+	return it->second;
+}
+
+
+void Scene::Render(Gdiplus::Graphics* g)
+{
+	// 카메라의 위치를 기준으로 화면을 그립니다.
+	Locator::GetCamera()->UpdatePos();
+	Vec2Int camPos = Locator::GetCamera()->GetPos();
+
+	// 배경 이미지 그리기
+	Rect drawRect(0, 0, CLIENT_WIDTH, CLIENT_HEIGHT);
+	if (_bgImage && _bgImage->GetLastStatus() == Ok) {
+		g->DrawImage(_bgImage, drawRect, camPos.x - CLIENT_WIDTH / 2, camPos.y - CLIENT_HEIGHT / 2 , CLIENT_WIDTH, CLIENT_HEIGHT, UnitPixel);
+	}
+	
+	for (Actor* actor : _actors)
+		actor->Render(g);
+
+	for (pair<uint32, Player*> player : _players)
+		player.second->Render(g);
+
+	_localPlayer->Render(g);
+	_localPlayer->RenderIndicator(g);
+}
+
+void Scene::LoadResource()
+{
 	//Load Image
-	Locator::GetLoader()->LoadImage(L"C:\\zinx7\\Resource\\save.png",L"IMG__BG");
+	Locator::GetLoader()->LoadImage(L"C:\\zinx7\\Resource\\save.png", L"IMG__BG");
 
 	// Main Character
 	Locator::GetLoader()->LoadImage(L"C:\\zinx7\\Resource\\platformer-sprites\\MainCharacters\\2\\PlayerDown.bmp", L"Test.png");
@@ -74,68 +130,16 @@ void Scene::Init()
 	/* Load TILEMAP */
 	Locator::GetLoader()->LoadTilemap(L"C:\\zinx7\\Resource\\1lvl-col.txt", L"lv1-col");
 	Tilemap* tm = Locator::GetLoader()->FindTilemap(L"lv1-col");
+}
 
-	/* 로컬 플레이어 캐릭터 생성 */
-	Player* localPlayer = SpawnLocalPlayer();
-	Locator::provideCamera(new Camera(localPlayer));
-
-	/* 오브젝트 생성 */
+void Scene::SpawnMonsters()
+{
 	Spawn(ActorType::Barrel, Vec2Int(64, 64), Vec2Int(120, 873), 1);
 	Spawn(ActorType::Barrel, Vec2Int(64, 64), Vec2Int(103, 873), 2);
 	Spawn(ActorType::Cactus, Vec2Int(64, 64), Vec2Int(370, 893), 3);
 	Spawn(ActorType::Cactus, Vec2Int(64, 64), Vec2Int(700, 893), 4);
 	Spawn(ActorType::Barrel, Vec2Int(64, 64), Vec2Int(783, 257), 5);
 	Spawn(ActorType::Barrel, Vec2Int(64, 64), Vec2Int(763, 257), 6);
-
-
-	/* 배경 */
-	_bgImage = (Gdiplus::Image*)Locator::GetLoader()->FindImage(L"IMG__BG");
-
-}
-
-void Scene::Update()
-{
-	_localPlayer->Update();
-	SendPlayerDataToServer();
-
-	Locator::GetSession()->UpdateScene(this);
-
-	for (Actor* actor : _actors)
-		actor->Update();
-
-}
-
-Player* Scene::FindPlayerById(uint32 id)
-{
-	auto it = _players.find(id);
-
-	if (it == _players.end())
-		return nullptr;
-
-	return it->second;
-}
-
-
-void Scene::Render(Gdiplus::Graphics* g)
-{
-	// 카메라의 위치를 기준으로 화면을 그립니다.
-	Locator::GetCamera()->UpdatePos();
-	Vec2Int camPos = Locator::GetCamera()->GetPos();
-
-	// 배경 이미지 그리기
-	Rect drawRect(0, 0, CLIENT_WIDTH, CLIENT_HEIGHT);
-	if (_bgImage && _bgImage->GetLastStatus() == Ok) {
-		g->DrawImage(_bgImage, drawRect, camPos.x - CLIENT_WIDTH / 2, camPos.y - CLIENT_HEIGHT / 2 , CLIENT_WIDTH, CLIENT_HEIGHT, UnitPixel);
-	}
-	
-	for (Actor* actor : _actors)
-		actor->Render(g);
-
-	for (pair<uint32, Player*> player : _players)
-		player.second->Render(g);
-
-	_localPlayer->Render(g);
-	_localPlayer->RenderIndicator(g);
 }
 
 Player* Scene::GetLocalPlayer()

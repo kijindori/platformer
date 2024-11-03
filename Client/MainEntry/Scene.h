@@ -23,6 +23,9 @@ public:
 
 	void Render(Gdiplus::Graphics* g);
 
+	void LoadResource();
+	void SpawnMonsters();
+
 	Player* GetLocalPlayer();
 	Player* SpawnLocalPlayer();
 	void UpdateLocalPlayer();
