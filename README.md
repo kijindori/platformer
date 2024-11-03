@@ -3,7 +3,7 @@
 ## WIN32 API 기반 플랫포머 게임
 
 ## MAIN ENTRY
-:: WINAPI MAIN ENTRY :: 
+:: WINAPI MAIN ENTRY ::    
 Platformer.cpp   
 Game.cpp
 
