@@ -1,13 +1,14 @@
 #pragma once
 #include "ResourceService.h"
 #include "Sprite.h"
+#include "Flipbook.h"
 #include "Tilemap.h"
 #include "pch.h"
 
 class Loader
 {
 public:
-	virtual ~Loader() {};
+	virtual ~Loader();
 	virtual void LoadImage(const wstring& path, wstring key) ;
 	virtual void LoadTilemap(const wstring& path, wstring key) ;
 	virtual Image* FindImage(wstring key);

@@ -20,7 +20,7 @@ public:
 	void Init();
 	void Update();
 	Player* FindPlayerById(uint32 id);
-	void UpdatePlayer(Player* player);
+
 	void Render(Gdiplus::Graphics* g);
 
 	Player* GetLocalPlayer();

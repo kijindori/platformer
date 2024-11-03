@@ -8,7 +8,17 @@
 
 
 Scene::Scene() {}
-Scene::~Scene() {}
+Scene::~Scene() 
+{
+	for (pair<uint32, Player*> player : _players)
+		delete player.second;
+
+	for (Actor* actor : _actors)
+		delete actor;
+
+	delete _localPlayer;
+	delete _bgImage;
+}
 
 
 void Scene::Init()
@@ -36,17 +46,17 @@ void Scene::Init()
 
 
 	// Cactus
-	Locator::GetLoader()->LoadImage(L"C:\\zinx7\\Resource\\platformer-sprites\\Enemies\\2\\Idle.png", L"E2_Idle.png");
-	Locator::GetLoader()->LoadImage(L"C:\\zinx7\\Resource\\platformer-sprites\\Enemies\\2\\Run.png", L"E2_Run.png");
-	Locator::GetLoader()->LoadImage(L"C:\\zinx7\\Resource\\platformer-sprites\\Enemies\\2\\Hit.png", L"E2_Hit.png");
-	Locator::GetLoader()->LoadImage(L"C:\\zinx7\\Resource\\platformer-sprites\\Enemies\\2\\Fall.png", L"E2_Fall.png");
-	Locator::GetLoader()->LoadImage(L"C:\\zinx7\\Resource\\platformer-sprites\\Enemies\\2\\Jump.png", L"E2_Jump.png");
+	Locator::GetLoader()->LoadImage(L"C:\\zinx7\\Resource\\platformer-sprites\\Enemies\\5\\Idle.png", L"E2_Idle.png");
+	Locator::GetLoader()->LoadImage(L"C:\\zinx7\\Resource\\platformer-sprites\\Enemies\\5\\Fly.png", L"E2_Fly.png");
+	Locator::GetLoader()->LoadImage(L"C:\\zinx7\\Resource\\platformer-sprites\\Enemies\\5\\Hit.png", L"E2_Hit.png");
+	//Locator::GetLoader()->LoadImage(L"C:\\zinx7\\Resource\\platformer-sprites\\Enemies\\5\\Fall.png", L"E2_Fall.png");
+	Locator::GetLoader()->LoadImage(L"C:\\zinx7\\Resource\\platformer-sprites\\Enemies\\5\\Attack.png", L"E2_Attack.png");
 
-	Locator::GetLoader()->CreateFlipbook(L"E2_Idle.png", 0, 0, 10, Vec2Int{ 48,48 });
-	Locator::GetLoader()->CreateFlipbook(L"E2_Run.png", 0, 0, 11, Vec2Int{ 48,48 });
+	Locator::GetLoader()->CreateFlipbook(L"E2_Idle.png", 0, 0, 5, Vec2Int{ 48,48 });
+	Locator::GetLoader()->CreateFlipbook(L"E2_Fly.png", 0, 0, 5, Vec2Int{ 48,48 });
 	Locator::GetLoader()->CreateFlipbook(L"E2_Hit.png", 0, 0, 4, Vec2Int{ 48,48 });
-	Locator::GetLoader()->CreateFlipbook(L"E2_Fall.png", 0, 0, 0, Vec2Int{ 48,48 });
-	Locator::GetLoader()->CreateFlipbook(L"E2_Jump.png", 0, 0, 0, Vec2Int{ 48,48 });
+	//Locator::GetLoader()->CreateFlipbook(L"E2_Fall.png", 0, 0, 0, Vec2Int{ 48,48 });
+	Locator::GetLoader()->CreateFlipbook(L"E2_Attack.png", 0, 7, 0, Vec2Int{ 48,48 });
 
 	// Barrel
 	Locator::GetLoader()->LoadImage(L"C:\\zinx7\\Resource\\platformer-sprites\\Enemies\\3\\Idle.png", L"E3_Idle.png");
@@ -70,9 +80,13 @@ void Scene::Init()
 	Locator::provideCamera(new Camera(localPlayer));
 
 	/* 오브젝트 생성 */
-	Spawn(ActorType::Barrel, Vec2Int(64, 64), Vec2Int(100, 873), 1);
-	Spawn(ActorType::Barrel, Vec2Int(64, 64), Vec2Int(83, 873), 2);
-	Spawn(ActorType::Cactus, Vec2Int(64, 64), Vec2Int(370, 770), 3);
+	Spawn(ActorType::Barrel, Vec2Int(64, 64), Vec2Int(120, 873), 1);
+	Spawn(ActorType::Barrel, Vec2Int(64, 64), Vec2Int(103, 873), 2);
+	Spawn(ActorType::Cactus, Vec2Int(64, 64), Vec2Int(370, 893), 3);
+	Spawn(ActorType::Cactus, Vec2Int(64, 64), Vec2Int(700, 893), 4);
+	Spawn(ActorType::Barrel, Vec2Int(64, 64), Vec2Int(783, 257), 5);
+	Spawn(ActorType::Barrel, Vec2Int(64, 64), Vec2Int(763, 257), 6);
+
 
 	/* 배경 */
 	_bgImage = (Gdiplus::Image*)Locator::GetLoader()->FindImage(L"IMG__BG");
@@ -85,8 +99,10 @@ void Scene::Update()
 	SendPlayerDataToServer();
 
 	Locator::GetSession()->UpdateScene(this);
-	/*for (Actor* actor : _actors)
-		actor->Update();*/
+
+	for (Actor* actor : _actors)
+		actor->Update();
+
 }
 
 Player* Scene::FindPlayerById(uint32 id)
@@ -99,10 +115,6 @@ Player* Scene::FindPlayerById(uint32 id)
 	return it->second;
 }
 
-void Scene::UpdatePlayer(Player* player)
-{
-
-}
 
 void Scene::Render(Gdiplus::Graphics* g)
 {
@@ -110,7 +122,7 @@ void Scene::Render(Gdiplus::Graphics* g)
 	Locator::GetCamera()->UpdatePos();
 	Vec2Int camPos = Locator::GetCamera()->GetPos();
 
-	// 배경 이미지
+	// 배경 이미지 그리기
 	Rect drawRect(0, 0, CLIENT_WIDTH, CLIENT_HEIGHT);
 	if (_bgImage && _bgImage->GetLastStatus() == Ok) {
 		g->DrawImage(_bgImage, drawRect, camPos.x - CLIENT_WIDTH / 2, camPos.y - CLIENT_HEIGHT / 2 , CLIENT_WIDTH, CLIENT_HEIGHT, UnitPixel);
@@ -118,7 +130,12 @@ void Scene::Render(Gdiplus::Graphics* g)
 	
 	for (Actor* actor : _actors)
 		actor->Render(g);
+
+	for (pair<uint32, Player*> player : _players)
+		player.second->Render(g);
+
 	_localPlayer->Render(g);
+	_localPlayer->RenderIndicator(g);
 }
 
 Player* Scene::GetLocalPlayer()
@@ -128,7 +145,7 @@ Player* Scene::GetLocalPlayer()
 
 Player* Scene::SpawnLocalPlayer()
 {
-	_localPlayer = new Player(Locator::GetLoader()->FindFlipbook(L"Idle.png"), Vec2Int(100, 100));
+	_localPlayer = new Player(Locator::GetLoader()->FindFlipbook(L"Idle.png"), Vec2Int(777, 300));
 	_localPlayer->SetId(
 		Locator::GetSession()->GetId()
 	);
@@ -143,6 +160,8 @@ void Scene::UpdateLocalPlayer()
 
 void Scene::SendPlayerDataToServer()
 {
+	Sleep(1);
+
 	Session* session = Locator::GetSession();
 	BYTE data[sizeof(PlayerData)];
 
@@ -163,11 +182,13 @@ Actor* Scene::Spawn(ActorType type, Vec2Int size, Vec2Int pos, uint32 id)
 		break;
 
 	case ActorType::Cactus:
-		spawnedActor = (Actor*) new Cactus(Locator::GetLoader()->FindFlipbook(L"E2_Idle.png"), pos);
+		spawnedActor = (Actor*) new Cactus(Locator::GetLoader()->FindFlipbook(L"E2_Fly.png"), pos);
+		_actors.insert(spawnedActor);
 		break;
 
 	case ActorType::Barrel:
 		spawnedActor = (Actor*) new Barrel(Locator::GetLoader()->FindFlipbook(L"E3_Idle.png"), pos);
+		_actors.insert(spawnedActor);
 		break;
 	}
 
@@ -175,7 +196,6 @@ Actor* Scene::Spawn(ActorType type, Vec2Int size, Vec2Int pos, uint32 id)
 	{
 		spawnedActor->SetId(id);
 		spawnedActor->SetSize(size);
-		_actors.insert(spawnedActor);
 	}
 	
 	return spawnedActor;

@@ -1,6 +1,21 @@
 #include "pch.h"
 #include "Loader.h"
 
+Loader::~Loader()
+{
+	for (pair<wstring, Image*> image : _images)
+		delete image.second;
+
+	for (pair<wstring, Tilemap*> tm : _tilemaps)
+		delete tm.second;
+
+	for (pair<wstring, Flipbook*> fb : _flipbooks)
+		delete fb.second;
+
+	for (pair<wstring, Sprite*> spr : _sprites)
+		delete spr.second;
+}
+
 void Loader::LoadImage(const wstring& path, wstring key)
 {
 	Image* img = new Image(path.c_str());
