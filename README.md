@@ -3,7 +3,8 @@
 ## WIN32 API 기반 플랫포머 게임
 
 ## MAIN ENTRY
-Platformer.cpp :: WINAPI MAIN ENTRY, 이벤트 루프    
+:: WINAPI MAIN ENTRY :: 
+Platformer.cpp   
 Game.cpp
 
 ### Scene    
