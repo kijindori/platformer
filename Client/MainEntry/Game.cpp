@@ -9,27 +9,8 @@
 
 void Game::Init(HWND hWnd)
 {
-
-	/* WINAPI 관련 초기화 */
-	_hWnd = hWnd;
-	_hdc = ::GetDC(hWnd);
-	_hdcBackBuffer = CreateCompatibleDC(_hdc);
-
-	::GetClientRect(hWnd, &_clientRect);
-
-	_width = _clientRect.right - _clientRect.left;
-	_height = _clientRect.bottom - _clientRect.top;
-	
-	/* 백 버퍼 초기화 */
-	HBITMAP backbit = CreateCompatibleBitmap(_hdc, _width, _height);
-	HBITMAP oldBackBit = (HBITMAP)SelectObject(_hdcBackBuffer, backbit);
-	DeleteObject(oldBackBit);
-
-	/* Gdiplus 초기화 */
-	GdiplusStartupInput gdiplusStartupInput;
-	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
-	_g = Gdiplus::Graphics::FromHDC(_hdcBackBuffer);
-
+	InitHDC(hWnd);
+	InitGdiplus();
 
 	/* 서비스 초기화 */
 	Locator::Init(_hWnd);
@@ -38,14 +19,11 @@ void Game::Init(HWND hWnd)
 	Locator::GetScene()->Init();
 }
 
-
-
 void Game::Update()
 {
 	/* 키보드 입력 상태 및 마우스 입력 상태 업데이트 */
 	Locator::GetInputService()->Update();
 
-	/* Interval 업데이트 */
 	Locator::GetTimer()->Update();
 
 	/* Scene 업데이트 -> Actor 업데이트 */
@@ -65,4 +43,29 @@ void Game::Render()
 	PatBlt(_hdcBackBuffer, 0, 0, _width, _height, BLACKNESS);
 }
 
+
+void Game::InitHDC(HWND hWnd)
+{
+	_hWnd = hWnd;
+	_hdc = ::GetDC(hWnd);
+	_hdcBackBuffer = CreateCompatibleDC(_hdc);
+
+	::GetClientRect(hWnd, &_clientRect);
+
+	_width = _clientRect.right - _clientRect.left;
+	_height = _clientRect.bottom - _clientRect.top;
+}
+
+void Game::InitGdiplus()
+{
+	/* 백 버퍼 초기화 */
+	HBITMAP backbit = CreateCompatibleBitmap(_hdc, _width, _height);
+	HBITMAP oldBackBit = (HBITMAP)SelectObject(_hdcBackBuffer, backbit);
+	DeleteObject(oldBackBit);
+
+	/* Gdiplus 초기화 */
+	GdiplusStartupInput gdiplusStartupInput;
+	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
+	_g = Gdiplus::Graphics::FromHDC(_hdcBackBuffer);
+}
 

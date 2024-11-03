@@ -8,6 +8,8 @@ public:
 	Game()	{}
 	~Game() {}
 	void	Init(HWND hWnd);
+	void	InitHDC(HWND hWnd);
+	void	InitGdiplus();
 	void	Update();
 	void	Render();
 
