@@ -3,16 +3,15 @@
 #include <cmath>
 
 #define NUM_PORT            7777
-#define NUM_MAX_SESSIONS    5
+#define NUM_MAX_SESSIONS    100
 #define SESSION_BUFFER_SIZE 100
-#define RECV_BUFF_SIZE 1024
-#define NUM_THREADS 5
-#define CLIENT_WIDTH	1024
-#define CLIENT_HEIGHT	768
-#define MAP_WIDTH		1920
-#define MAP_HEIGHT		1024
-#define SERVER_IP_ADDR	L"125.247.81.185"
-#define PORT			60000
+#define RECV_BUFF_SIZE		1024
+#define NUM_THREADS			5
+#define CLIENT_WIDTH		1024
+#define CLIENT_HEIGHT		768
+#define MAP_WIDTH			1920
+#define MAP_HEIGHT			1024
+#define PORT				60000
 
 using int64		= __int64;
 using int32		= __int32;

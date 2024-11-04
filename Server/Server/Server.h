@@ -11,7 +11,7 @@ public:
 	~Server();
 
 	void Init();
-	void Broadcast();
+	void Broadcast(PlayerData* data);
 	void Join();
 	void Close();
 

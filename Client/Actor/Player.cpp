@@ -36,7 +36,10 @@ Player::Player(Flipbook* fb, Vec2Int pos): Super(fb)
 	SetState(PlayerState::Fall);
 }
 
-Player::~Player() {}
+Player::~Player() 
+{
+
+}
 
 
 void Player::Init()
@@ -50,13 +53,12 @@ void Player::Update()
 	/* Update Player State */
 	UpdateState();
 
-	/**/
 	TickGravity();
 
 	/* Update Player Position */
 	TickStep();
 
-	/* Update Component  */
+	/* Update Component */
 	Super::Update();
 }
 
@@ -65,6 +67,26 @@ void Player::Update()
 void Player::Render(Gdiplus::Graphics* g)
 {
 	Super::Render(g);
+}
+
+void Player::RenderIndicator(Graphics* g)
+{
+	Vec2Int pos = GetPos();
+	Vec2Int size = GetSize();
+
+	// 카메라를 기준점으로 한 상대 위치로 조정
+	Locator::GetCamera()->AdjustActorPosition(&pos);
+	// offset
+	
+	int32 r = 10;
+	int32 offset = r / 2;
+
+	SolidBrush brush(Color(255, 255, 255, 255));				   // (Alpha, Red, Green, Blue)
+	Pen skyBluePen(Color(255, 33, 255, 33));
+	Rect rectangle(pos.x - offset, pos.y - size.y - offset, r, r); // (왼쪽, 위, 너비, 높이)
+
+	g->FillEllipse(&brush, rectangle);
+	g->DrawEllipse(&skyBluePen, rectangle);
 }
 
 void Player::OnBeginCollision(Collider* src, Collider* dest)
@@ -151,7 +173,8 @@ PlayerState Player::CheckOverlap(RECT& other, RECT& intersect)
 	}
 }
 
-void Player::Serialize(BYTE* data)
+
+void Player::Serialize(BYTE data[], size_t len)
 {
 	PlayerData temp;
 	temp.id			= GetId();
@@ -160,8 +183,8 @@ void Player::Serialize(BYTE* data)
 	temp.state		= (uint32)GetState();
 	temp.index		= GetIndex();
 	temp.direction  = GetDirection();
-
-	::memcpy(data, &temp, sizeof(temp));
+	
+	::memcpy_s(data, len, &temp, sizeof(temp));
 }
 
 
@@ -197,13 +220,13 @@ void Player::UpdateState()
 	if (Locator::GetInputService()->IsKeyDown(KeyType::Right)) {
 		// Turn Right
 		_dir = 1;
-		Super::SetLeft(false);
+		Super::SetLeft(_dir < 0);
 	}
 
 	if (Locator::GetInputService()->IsKeyDown(KeyType::Left)) {
 		// Turn Left
 		_dir = -1;
-		Super::SetLeft(true);
+		Super::SetLeft(_dir < 0);
 	}
 
 
@@ -214,7 +237,7 @@ void Player::UpdateState()
 		if (Locator::GetInputService()->IsKeyDown(KeyType::Right)
 			|| Locator::GetInputService()->IsKeyDown(KeyType::Left)
 			|| Locator::GetInputService()->IsKeyDown(KeyType::W)
-			)
+		)
 		{
 			SetState(PlayerState::Ready);
 			break;
@@ -227,7 +250,7 @@ void Player::UpdateState()
 
 		if (Locator::GetInputService()->IsKeyPressed(KeyType::Right)
 			|| Locator::GetInputService()->IsKeyPressed(KeyType::Left)
-			)
+		)
 		{
 			Run(_dir); 
 			SetState(PlayerState::Run);
@@ -256,7 +279,7 @@ void Player::UpdateState()
 
 		if (Locator::GetInputService()->IsKeyPressed(KeyType::Right)
 			&& Locator::GetInputService()->IsKeyPressed(KeyType::Left)
-			)
+		)
 		{
 			StopX();
 			SetState(PlayerState::Idle);
@@ -364,7 +387,7 @@ void Player::StopY()
 }
 void Player::Run(int32 dir)
 {
-	// 캐릭터의 방향과 진행 방향이 다르면 멈춥니다.
+	// 캐릭터의 방향과 진행중인 방향이 다르면 멈춥니다.
 	if (_v.x * dir < 0)
 	{
 		StopX();
@@ -383,15 +406,18 @@ void Player::TickGravity()
 		_v.y = min(11, _v.y + _gravity);
 }
 
-/* Player의 충돌체를 기준으로 다음 스텝을 진행하고 벽에 부딪히는지 확인합니다. */
+/* 
+	Player의 충돌체를 기준으로 다음 스텝을 진행하고 벽에 부딪히는지 확인합니다. 
+	벽에 부딪힌다면 다음 스텝을 진행하지 않습니다.
+	X축과 Y축을 나누어서 고려합니다.
+*/
 void Player::TickStep()
 {
 	Vec2Int pos = GetCollider()->GetAbsolutePos();
-
 	Tilemap* tm = Locator::GetLoader()->FindTilemap(L"lv1-col");
 	auto& tiles = tm->GetTiles();
-	Vec2Int tileSize = tm->GetTileSize();
 
+	Vec2Int tileSize = tm->GetTileSize();
 	int32 sizeX = GetCollider()->GetSize().x;
 	int32 sizeY = GetCollider()->GetSize().y;
 
@@ -400,7 +426,6 @@ void Player::TickStep()
 	int32 nextY = _v.y > 0 ? pos.y + _v.y : pos.y - sizeY + _v.y;
 
 	/* 현재 위치한 셀 좌표 */
-	//TODO : 식 정리
 	int32 currentCellX = _dir > 0 ? (pos.x + sizeX / 2) / tileSize.x : (pos.x - sizeX/2) / tileSize.x;
 	int32 currentCellXForCheckFalling = pos.x / tileSize.x;
 	int32 currentCellY = _v.y > 0 ?  pos.y / tileSize.y : (pos.y - sizeY) / tileSize.y;

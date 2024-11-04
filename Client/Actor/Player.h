@@ -43,16 +43,17 @@ public:
 	virtual void Init() override;
 	virtual void Update() override;
 	virtual void Render(Graphics* g) override;
+	void RenderIndicator(Graphics* g);
 
 	virtual void OnBeginCollision(Collider* src, Collider* dest) override;
 	virtual void OnColliding(Collider* src, Collider* dest) override;
 	virtual void OnEndCollision(Collider* src, Collider* dest) override;
 
 	PlayerState CheckOverlap(RECT& other, RECT& intersect);
-	
 
-	void Serialize(BYTE* data);
-
+	void Serialize(BYTE data[], size_t len);
+	void TickGravity();
+	void TickStep();
 
 
 	PlayerState GetState();
@@ -68,8 +69,7 @@ private:
 	void Jump();
 	void Hit();
 	void Drag();
-	void TickGravity();
-	void TickStep();
+	
 	void SlowMove(int _dir);
 
 

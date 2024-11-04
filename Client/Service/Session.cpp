@@ -82,20 +82,19 @@ void Session::Init()
 void Session::RecvId()
 {
 	recv(_session, _recvBuff, sizeof(_recvBuff), 0);
-	::memcpy(&_id, _recvBuff, sizeof(_id));
+	::memcpy_s(&_id, sizeof(_id), _recvBuff, sizeof(_id));
 }
 
 void Session::Recv()
 {
 	recv(_session, _recvBuff, sizeof(_recvBuff), 0);
-	
 	PlayerData* data = new PlayerData();
-	::memcpy(&data->id		 , _recvBuff	 , 4);
-	::memcpy(&data->x		 , _recvBuff + 4 , 4);
-	::memcpy(&data->y		 , _recvBuff + 8 , 4);
-	::memcpy(&data->state	 , _recvBuff + 12, 4);
-	::memcpy(&data->index	 , _recvBuff + 16, 4);
-	::memcpy(&data->direction, _recvBuff + 20, 4);
+	::memcpy_s(&data->id		, sizeof(data->id)		 , _recvBuff	 , 4);
+	::memcpy_s(&data->x			, sizeof(data->x)		 , _recvBuff + 4 , 4);
+	::memcpy_s(&data->y			, sizeof(data->y)		 , _recvBuff + 8 , 4);
+	::memcpy_s(&data->state		, sizeof(data->state)	 , _recvBuff + 12, 4);
+	::memcpy_s(&data->index		, sizeof(data->index)	 , _recvBuff + 16, 4);
+	::memcpy_s(&data->direction , sizeof(data->direction), _recvBuff + 20, 4);
 	
 	EnterCriticalSection(&cs);
 	_dataQueue.push(data);

@@ -20,9 +20,9 @@ void Server::Init()
 	_service->Accept();
 }
 
-void Server::Broadcast()
+void Server::Broadcast(PlayerData* data)
 {
-	//_service->Broadcast();
+	_service->Broadcast(data);
 }
 
 HANDLE Server::GetHandle()

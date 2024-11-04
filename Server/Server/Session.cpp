@@ -35,7 +35,7 @@ void Session::RegisterInitialSend()
 	WSABUF sendbuf;
 	_sendContext->Init();
 
-	::memcpy(_sendBuffer, &_id, sizeof(_id));
+	::memcpy_s(_sendBuffer, sizeof(_sendBuffer), & _id, sizeof(_id));
 	sendbuf.len = sizeof(_sendBuffer);
 	sendbuf.buf = (char*)_sendBuffer;
 
@@ -49,7 +49,7 @@ void Session::RegisterSend(PlayerData* data)
 
 	_sendContext->Init();
 
-	::memcpy(_sendBuffer, data, 24);
+	::memcpy_s(_sendBuffer, sizeof(_sendBuffer), data, 24);
 
 	sendbuf.len = sizeof(_sendBuffer);
 	sendbuf.buf = (char*)_sendBuffer;
