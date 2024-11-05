@@ -1,6 +1,5 @@
 ### [진입점]
-Platformer.cpp   
-Game.cpp
+Platformer.cpp   -> Game.cpp -> Scene.cpp   
 
 ### Scene    
         |-- Init   : 리소스 로드, 액터 배치   
