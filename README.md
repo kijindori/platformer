@@ -1,8 +1,4 @@
-# Platformer
-
-## WIN32 API 기반 플랫포머 게임
-
-## 진입점
+### [진입점]
 Platformer.cpp   
 Game.cpp
 
