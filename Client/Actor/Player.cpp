@@ -33,7 +33,6 @@ Player::Player(Flipbook* fb, Vec2Int pos): Super(fb)
 	coll->SetRelativePos(Vec2Int(0, -1));
 	
 	AddComponent(coll);
-	SetState(PlayerState::Fall);
 }
 
 Player::~Player() 
@@ -52,6 +51,8 @@ void Player::Update()
 {
 	/* Update Player State */
 	UpdateState();
+
+	TickState();
 
 	TickGravity();
 
@@ -108,7 +109,7 @@ void Player::OnBeginCollision(Collider* src, Collider* dest)
 		if (dynamic_cast<Barrel*>(dest->GetOwner()))
 		{
 			SetState(PlayerState::DoubleJump);
-			_v.y = -17;
+			
 		}
 		break;
 
@@ -131,7 +132,6 @@ void Player::OnColliding(Collider* src, Collider* dest)
 	{
 		if (_state != PlayerState::Hit && _state != PlayerState::DoubleJump)
 		{
-			Hit();
 			SetState(PlayerState::Hit);
 		}
 	}
@@ -194,10 +194,10 @@ PlayerState Player::GetState()
 }
 
 
-void Player::SetState(PlayerState st)
+bool Player::SetState(PlayerState st)
 {
 	if (st == _state || _fbs[(int32)st] == nullptr)
-		return;
+		return false;
 
 
 	Super::SetIndex(0);
@@ -205,7 +205,55 @@ void Player::SetState(PlayerState st)
 		Super::SetFlipbook(_fbs[(int32)st]);
 
 	_state = st;
-	
+	if(isLocal())
+		SendDataToServer();
+
+	return true;
+}
+
+bool Player::SetLocal(bool flag)
+{
+	_isLocal = flag;
+	return true;
+}
+
+bool Player::isLocal()
+{
+	return _isLocal;
+}
+
+bool Player::IsJumping()
+{
+	return _jumping;
+}
+
+bool Player::SetJumping(bool flag)
+{
+	_jumping = flag;
+	return true;
+}
+
+void Player::SetLeft(bool flag)
+{	
+	Super::SetLeft(flag);
+	_dir = flag ? -1 : 1;
+
+	if(isLocal())
+		SendDataToServer();
+}
+
+
+bool Player::SendDataToServer()
+{
+	Sleep(1);
+
+	Session* session = Locator::GetSession();
+	BYTE data[sizeof(PlayerData)];
+	Serialize(data, sizeof(data));
+
+	session->Send(data, sizeof(data));
+
+	return true;
 }
 
 int32 Player::GetDirection()
@@ -213,20 +261,22 @@ int32 Player::GetDirection()
 	return _dir;
 }
 
+
 void Player::UpdateState()
 {
+	if (!isLocal())
+		return;
+
 	double timer;
 
 	if (Locator::GetInputService()->IsKeyDown(KeyType::Right)) {
 		// Turn Right
-		_dir = 1;
-		Super::SetLeft(_dir < 0);
+		SetLeft(false);
 	}
 
 	if (Locator::GetInputService()->IsKeyDown(KeyType::Left)) {
 		// Turn Left
-		_dir = -1;
-		Super::SetLeft(_dir < 0);
+		SetLeft(true);
 	}
 
 
@@ -252,7 +302,6 @@ void Player::UpdateState()
 			|| Locator::GetInputService()->IsKeyPressed(KeyType::Left)
 		)
 		{
-			Run(_dir); 
 			SetState(PlayerState::Run);
 			break;
 		}
@@ -260,7 +309,6 @@ void Player::UpdateState()
 
 		if (Locator::GetInputService()->IsKeyPressed(KeyType::W))
 		{
-			Jump();
 			SetState(PlayerState::Jump);
 			break;
 		}
@@ -288,53 +336,36 @@ void Player::UpdateState()
 
 		if (Locator::GetInputService()->IsKeyPressed(KeyType::W))
 		{
-			Jump();
 			SetState(PlayerState::Jump);
 			break;
 		}
-
-		if (Locator::GetInputService()->IsKeyPressed(KeyType::Right)
-			|| Locator::GetInputService()->IsKeyPressed(KeyType::Left))
-		{
-			Run(_dir);
-			SetState(PlayerState::Run);
-			break;
-		}
-
-
 		
 		break;
 
 	case(PlayerState::Jump):
 		if (_v.y > 0)
+		{
 			SetState(PlayerState::Fall);
-
+		}
 		break;
 	
 	case(PlayerState::DoubleJump):
+
 		if (Locator::GetInputService()->IsKeyPressed(KeyType::Right)
 			|| Locator::GetInputService()->IsKeyPressed(KeyType::Left)
 			)
 		{
-			SlowMove(_dir);
+			//SlowMove(_dir);
 		}
 		break;
 
 	case(PlayerState::OnGround):
+		
 		SetState(PlayerState::Ready);
 		break;
 
 	case(PlayerState::Hit):
-		timer = GetHitTimer();
-		/* 1.3초간 Hit 상태 유지 */
-		if (timer > 1300)
-		{
-			SetHitTimer(0);
-			SetState(PlayerState::Ready);
-		}
-		else
-			/* TICK */
-			SetHitTimer( timer + Locator::GetTimer()->GetInterval() );
+		
 		break;
 
 	case(PlayerState::Fall):
@@ -359,21 +390,29 @@ bool Player::CanGo(int32 cellX, int32 cellY, vector<vector<Tile>>& tiles)
 
 void Player::Jump()
 {
+	SetJumping(true);
 	_v.y = -13;
+}
+
+void Player::DoubleJump()
+{
+	SetJumping(true);
+	_v.x += _dir;
+	_v.y = -17;
 }
 
 void Player::Hit()
 {
-	_v.x = _dir * -3.0;
-	_v.y = -9;
+	_v.x = _dir * -1;
+	_v.y = -3;
 }
 
 void Player::Drag()
 {
 	if (_v.x < 0)
-		_v.x = min(0, _v.x + .7);
+		_v.x = min(0, _v.x + 1);
 	else
-		_v.x = max(0, _v.x - .7);
+		_v.x = max(0, _v.x - 1);
 }
 
 void Player::StopX()
@@ -404,6 +443,58 @@ void Player::TickGravity()
 {
 	if (_v.y < 11)
 		_v.y = min(11, _v.y + _gravity);
+}
+
+void Player::TickState()
+{
+	double timer = 0;
+
+	switch (_state)
+	{
+	case(PlayerState::Idle):
+		StopX();
+		break;
+
+	case(PlayerState::Run):
+		Run(_dir);
+		break;
+
+	case(PlayerState::Hit):
+		timer = GetHitTimer();
+		if (timer < 1)
+			Hit();
+		/* 1.3초간 Hit 상태 유지 */
+		if (timer > 1300)
+		{
+			SetHitTimer(0);
+			SetState(PlayerState::Ready);
+		}
+		else
+			/* TICK */
+			SetHitTimer(timer + Locator::GetTimer()->GetInterval());
+		break;
+
+	case(PlayerState::Ready):
+		SetJumping(false);
+		break;
+
+	case(PlayerState::DoubleJump):
+		if (!IsJumping())
+			DoubleJump();
+		break;
+
+	case(PlayerState::Jump):
+		if(!IsJumping())
+			Jump();
+		break;
+
+	case(PlayerState::Fall):
+		if (IsJumping())
+			SetJumping(false);
+		break;
+
+	}
+
 }
 
 /* 
@@ -462,13 +553,13 @@ void Player::TickStep()
 
 		case(PlayerState::Jump):
 			StopY();
-			SetState(PlayerState::Fall);
+			SetState(PlayerState::Ready);
 			break;
 
 		case(PlayerState::DoubleJump):
 			StopY();
 			SetState(PlayerState::Ready);
-		
+			break;
 		}
 
 		if (_v.y > 0)

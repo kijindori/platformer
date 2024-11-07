@@ -35,19 +35,18 @@ void Scene::Init()
 void Scene::Update()
 {
 	_localPlayer->Update();
-	SendPlayerDataToServer();
-
 	Locator::GetSession()->UpdateScene(this);
-
+	
 	for (Actor* actor : _actors)
-		actor->Update();
+		actor->Update();	
 
+	for (pair<uint32, Player*> player : _players)
+		player.second->Update();
 }
 
 Player* Scene::FindPlayerById(uint32 id)
 {
 	auto it = _players.find(id);
-
 	if (it == _players.end())
 		return nullptr;
 
@@ -142,6 +141,17 @@ void Scene::SpawnMonsters()
 	Spawn(ActorType::Barrel, Vec2Int(64, 64), Vec2Int(763, 257), 6);
 }
 
+void Scene::TickTimer()
+{
+	_timer += Locator::GetTimer()->GetInterval();
+}
+
+bool Scene::SetTimer(double t)
+{
+	_timer = t;
+	return true;
+}
+
 Player* Scene::GetLocalPlayer()
 {
 	return _localPlayer;
@@ -153,6 +163,7 @@ Player* Scene::SpawnLocalPlayer()
 	_localPlayer->SetId(
 		Locator::GetSession()->GetId()
 	);
+	_localPlayer->SetLocal(true);
 
 	return _localPlayer;
 }
@@ -162,15 +173,6 @@ void Scene::UpdateLocalPlayer()
 	_localPlayer->Update();
 }
 
-void Scene::SendPlayerDataToServer()
-{
-	Sleep(1);
-
-	Session* session = Locator::GetSession();
-	BYTE data[sizeof(PlayerData)];
-	_localPlayer->Serialize(data, sizeof(data));
-	session->Send(data, sizeof(data));
-}
 
 Actor* Scene::Spawn(ActorType type, Vec2Int size, Vec2Int pos, uint32 id)
 {

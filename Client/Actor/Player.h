@@ -53,11 +53,18 @@ public:
 
 	void Serialize(BYTE data[], size_t len);
 	void TickGravity();
+	void TickState();
 	void TickStep();
 
 
 	PlayerState GetState();
-	void SetState(PlayerState st);
+	bool SetState(PlayerState st);
+	bool SetLocal(bool flag);
+	bool isLocal();
+	bool SetJumping(bool flag);
+	bool IsJumping();
+	virtual void SetLeft(bool flag) override;
+	bool SendDataToServer();
 	int32 GetDirection();
 
 private:
@@ -67,6 +74,7 @@ private:
 	void StopY();
 	void Run(int32 dir);
 	void Jump();
+	void DoubleJump();
 	void Hit();
 	void Drag();
 	
@@ -77,9 +85,11 @@ private:
 	
 	int32 _dir = 1;
 	int32 _gravity = 1;
+	bool  _isLocal = false;
+	bool  _jumping = false;
 	Vec2Int _v{ 0,0 };
 
-	PlayerState _state = PlayerState::Idle;
+	PlayerState _state = PlayerState::Fall;
 	vector<Flipbook*> _fbs;
 	
 };

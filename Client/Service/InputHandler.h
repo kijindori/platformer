@@ -60,8 +60,8 @@ public:
 private:
 	KeyState GetState(KeyType key) { return _states[static_cast<uint8>(key)]; }
 
-	HWND _hWnd = 0;
+	HWND			 _hWnd		= 0;
 	vector<KeyState> _states;
-	POINT _cursorPos{ 0,0 };
+	POINT			 _cursorPos	{ 0,0 };
 };
 

@@ -13,7 +13,6 @@ Session*		Locator::_session				= nullptr;
 
 unsigned int WINAPI Receive(LPVOID param)
 {
-    //Session* session = reinterpret_cast<Session*>(param);
     Session* session = Locator::GetSession();
     while (true)
     {
@@ -26,37 +25,42 @@ unsigned int WINAPI Receive(LPVOID param)
 
 void Locator::Init(HWND hWnd)
 {
-    InitSession();
+    assert( InitSession() );
 	Locator::provideLoader( new Loader() );
 	Locator::provideInputService( new InputHandler(hWnd) );
 	Locator::provideCollisionService( new Collision() );
 	Locator::provideTimer( new Timer() );
 	Locator::provideScene( new Scene() );
-
-	
 }
 
-void Locator::InitSession()
+bool Locator::InitSession()
 {
 
     WSADATA wsaData;
-    assert( WSAStartup(MAKEWORD(2, 2), &wsaData) == 0 );
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+    {
+        int err = WSAGetLastError();
+        return false;
+    }
 
     SOCKET sock = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
     sockaddr_in addr;
     addr.sin_family = AF_INET;
     addr.sin_port = htons(PORT);
-    InetPton(AF_INET, SERVER_IP_ADDR, &addr.sin_addr.s_addr);
+    InetPton(AF_INET, L"192.168.200.191", &addr.sin_addr.s_addr);
 
-    assert(connect(sock, (sockaddr*)&addr, sizeof(addr)) == 0);
+    if (connect(sock, (sockaddr*)&addr, sizeof(addr)) != 0)
+    {
+        int err = WSAGetLastError();
+        return false;
+    }
     _session = new Session(sock);
 
     char buff[20] = "Init Session";
     _session -> Send((BYTE*)buff, 20);
-
     _session -> RecvId();
 
-    _beginthreadex(
+    uint32 ret = _beginthreadex(
         NULL,
         0,
         Receive,
@@ -64,6 +68,14 @@ void Locator::InitSession()
         0,
         0
     );
+
+    if (ret <= 0)
+    {
+        int err = GetLastError();
+        return false;
+    }
+
+    return true;
 }
 
 

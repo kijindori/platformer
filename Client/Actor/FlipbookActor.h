@@ -19,7 +19,7 @@ public:
 	virtual void OnColliding(Collider* src, Collider* dest) override;
 	virtual void OnEndCollision(Collider* src, Collider* dest) override;
 
-	void SetLeft(bool flag);
+	virtual void SetLeft(bool flag);
 	void SetFlipbook(Flipbook* fb);
 	void SetIndex(uint32 index) { _index = index; }
 	uint32 GetIndex();

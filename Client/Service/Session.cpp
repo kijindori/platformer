@@ -62,9 +62,10 @@ void Session::UpdateScene(Scene* scene)
 			);
 		}
 		
+		Vec2Int pos = Vec2Int(playerdata->x, playerdata->y);
+		player->SetPos(pos);
 		player->SetState((PlayerState)playerdata->state);
-		player->SetPos(Vec2Int(playerdata->x, playerdata->y));
-		player->SetIndex(playerdata->index);
+		//player->SetIndex(playerdata->index);
 		player->SetLeft(playerdata->direction < 0);
 
 		delete playerdata;

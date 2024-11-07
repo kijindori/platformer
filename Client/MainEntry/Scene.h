@@ -25,11 +25,12 @@ public:
 
 	void LoadResource();
 	void SpawnMonsters();
+	bool SetTimer(double t);
+	void TickTimer();
 
 	Player* GetLocalPlayer();
 	Player* SpawnLocalPlayer();
 	void UpdateLocalPlayer();
-	void SendPlayerDataToServer();
 	Actor* Spawn(ActorType type, Vec2Int size, Vec2Int pos, uint32 id);
 
 private:
@@ -42,5 +43,6 @@ private:
 	Player* _localPlayer;
 	Vec2Int Size{ 1920, 1024 };
 	Vec2 _startPos = { 1920, 1024 };
+	double _timer = .0;
 };
 
